@@ -9,25 +9,31 @@
 #define IRC_CLIENT_H_
 
 #include <string>
-using namespace std;
 
 class IRC_Client {
+    private:
+        int socket_descriptor;
+
+        bool send_data(std::string data);
+        void message_handler(char *buffer);
+
     public:
         // Server configuration.
-        string server;
-        int port;
-        string server_password;
+        std::string server;
+        std::string port;
+        std::string server_password;
 
         // Client configuration.
-        string nick;
-        string username;
-        string realname;
+        std::string nick;
+        std::string username;
+        std::string realname;
 
         // Constructor.
-        IRC_Client(string _server, int _port, string _server_pass);
+        IRC_Client(std::string _server, std::string _port, std::string _server_pass);
         //~IRC_Client();
 
-        void setup_user(string _nick, string _username, string _realname);
+        void setup_user(std::string _nick, std::string _username, std::string _realname);
+        void start_connection();
 };
 
 #endif

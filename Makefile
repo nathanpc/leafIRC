@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-Wall -g3
-OBJ=leaf.o irc_client.o
+OBJ=leaf.o irc_client.o message.o repl.o
 
 all: leaf
 

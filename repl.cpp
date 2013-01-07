@@ -7,45 +7,44 @@
 #include <iostream>
 #include <string>
 #include <stdlib.h>
-#include <stdio.h>
-#include <sys/ioctl.h>
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
 
 #include "repl.h"
 using namespace std;
 
 REPL::REPL() {
-    //system("stty raw -echo");
+    has_started = false;
+    input_marker = "> ";
 }
 
-/*REPL::~REPL() {
-    system("stty cooked");
-}*/
-
-int kbhit (void)
-{
-  struct timeval tv;
-  fd_set rdfs;
- 
-  tv.tv_sec = 0;
-  tv.tv_usec = 0;
- 
-  FD_ZERO(&rdfs);
-  FD_SET (STDIN_FILENO, &rdfs);
- 
-  select(STDIN_FILENO+1, &rdfs, NULL, NULL, &tv);
-  return FD_ISSET(STDIN_FILENO, &rdfs);
- 
+void REPL::rewrite() {
+    cout << input_marker + current_str << flush;
 }
-void REPL::getchr() {
-    if (kbhit()) {
-        char c = getchar();
-        if (c != 'q') {
-            cout << c << endl;
+
+string REPL::read() {
+    has_started = true;
+    current_str = "";
+    char curr_char;
+
+    cout << "> ";
+    //printf("%d\n", curr_char = getchar());
+
+    while (true) {
+        curr_char = getchar();
+
+        if (curr_char != 10) {
+            char *char_str = (char*)malloc(2 * sizeof(char));
+            char_str[0] = curr_char;
+            char_str[1] = '\0';
+
+            current_str.append(char_str);
         } else {
-            system("stty cooked echo");
+            break;
         }
     }
+
+    return current_str + "\r\n";
+}
+
+void REPL::eval() {
+    
 }

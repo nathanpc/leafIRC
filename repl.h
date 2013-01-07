@@ -11,15 +11,17 @@
 
 class REPL {
     public:
+        bool has_started;
+        std::string input_marker;
+        std::string current_str;
+
         // Constructor.
         REPL();
         //~REPL();
 
-        //void setup();
-        void getchr();
-
-        //std::string get_command();
-        //std::vector<std::string> get_command_args();
+        void rewrite();
+        std::string read();
+        void eval();
 };
 
 #endif

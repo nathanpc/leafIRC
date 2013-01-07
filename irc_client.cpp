@@ -68,7 +68,26 @@ void *IRC_Client::handle_recv(void) {
     while (true) {
         numbytes = recv(socket_descriptor, buffer, MAXDATASIZE - 1, 0);
         buffer[numbytes] = '\0';
-        cout << "<< " << buffer;
+
+        if (!repl.has_started) {
+            cout << buffer;
+        } else {
+            string str_buffer(buffer);
+            int diff = (repl.current_str.length() + 2) - str_buffer.length();
+            cout << repl.current_str.length() + 2 << endl;
+
+            if (diff > 0) {
+                for (int i = 0; i < diff; i++) {
+                    cout << "Found - ";
+                    str_buffer.append(" ");
+                }
+
+                cout << endl;
+            }
+
+            cout << "\r" << str_buffer;
+            repl.rewrite();
+        }
  
         message_handler(buffer);    
 
@@ -102,6 +121,7 @@ void IRC_Client::start_connection() {
     }
 
     freeaddrinfo(servinfo);  // Free the server information, we don't need it anymore.
+    pthread_create(&thread, NULL, &handle_recv_thread_helper, this);
 
     bool just_connected = true;
     while (true) {
@@ -110,9 +130,9 @@ void IRC_Client::start_connection() {
             send_data("USER " + username + " 0 * :" + realname + "\r\n");  // TODO: Set user mode.
 
             just_connected = false;
-            pthread_create(&thread, NULL, &handle_recv_thread_helper, this);
         }
 
-        repl.getchr();
+        send_data(repl.read().c_str());
+        cout << repl.current_str << endl;
     }
 }

@@ -8,9 +8,9 @@
 
 #include <iostream>
 #include <string>
+#include <curses.h>
 
 #include "irc_client.h"
-
 using namespace std;
 
 int main(int argc, char *argv[]) {
@@ -19,6 +19,5 @@ int main(int argc, char *argv[]) {
 
     client.start_connection();
 
-    cout << "Server string: " << client.server << ":" << client.port << endl;
     return 0;
 }

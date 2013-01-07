@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <pthread.h>
 
 #include "irc_client.h"
 #include "message.h"
@@ -59,6 +60,24 @@ void IRC_Client::message_handler(char *buffer) {
     }
 }
 
+void *IRC_Client::handle_recv(void) {
+    // recv some data.
+    int numbytes;
+    char buffer[MAXDATASIZE];
+
+    while (true) {
+        numbytes = recv(socket_descriptor, buffer, MAXDATASIZE - 1, 0);
+        buffer[numbytes] = '\0';
+        cout << "<< " << buffer;
+ 
+        message_handler(buffer);    
+
+        if (numbytes == 0) {
+            cout << "Connection terminated" << endl;
+        }
+    }
+}
+
 void IRC_Client::start_connection() {
     struct addrinfo hints, *servinfo;
 
@@ -84,10 +103,6 @@ void IRC_Client::start_connection() {
 
     freeaddrinfo(servinfo);  // Free the server information, we don't need it anymore.
 
-    // recv some data.
-    int numbytes;
-    char buffer[MAXDATASIZE];
-
     bool just_connected = true;
     while (true) {
         if (just_connected) {
@@ -95,17 +110,9 @@ void IRC_Client::start_connection() {
             send_data("USER " + username + " 0 * :" + realname + "\r\n");  // TODO: Set user mode.
 
             just_connected = false;
+            pthread_create(&thread, NULL, &handle_recv_thread_helper, this);
         }
 
-        numbytes = recv(socket_descriptor, buffer, MAXDATASIZE - 1, 0);
-        buffer[numbytes] = '\0';
-        cout << "<< " << buffer;
-
-        message_handler(buffer);
-
-        if (numbytes == 0) {
-            cout << "Connection terminated" << endl;
-            break;
-        }
+        repl.getchr();
     }
 }

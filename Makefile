@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -g3
+CPPFLAGS=-Wall
 OBJ=leaf.o irc_client.o message.o repl.o
 
 all: leaf
@@ -8,7 +8,7 @@ leaf: $(OBJ)
 	$(CC) $^ -o $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) $<
+	$(CC) $(CPPFLAGS) $<
 
 clean:
 	rm -rf *.o leaf

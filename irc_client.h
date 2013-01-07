@@ -9,6 +9,7 @@
 #define IRC_CLIENT_H_
 
 #include <string>
+#include "repl.h"
 
 class IRC_Client {
     private:
@@ -16,8 +17,13 @@ class IRC_Client {
 
         bool send_data(std::string data);
         void message_handler(char *buffer);
+        void *handle_recv(void);
+        static void *handle_recv_thread_helper(void *context) { return ((IRC_Client *)context)->handle_recv(); }
 
     public:
+        pthread_t thread;
+        REPL repl;
+
         // Server configuration.
         std::string server;
         std::string port;

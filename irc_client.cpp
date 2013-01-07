@@ -45,11 +45,7 @@ bool IRC_Client::send_data(string data) {
     int len = strlen(buffer);
     int bytes_sent = send(socket_descriptor, buffer, len, 0);
 
-    if (bytes_sent == 0) {
-        return false;
-    } else {
-        return true;
-    }
+    return bytes_sent;
 }
 
 void IRC_Client::message_handler(char *buffer) {
@@ -73,12 +69,8 @@ void *IRC_Client::handle_recv(void) {
             cout << buffer;
         } else {
             string str_buffer(buffer);
-            int curr_input_length = repl.current_str.length() + 2;
 
-            for (int i = 0; i < curr_input_length; i++) {
-                printf("\b \b");
-            }
-
+            repl.clear();
             cout << "\r" << str_buffer;
             repl.rewrite();
         }

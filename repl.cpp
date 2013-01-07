@@ -15,7 +15,24 @@ using namespace std;
 REPL::REPL() {
     has_started = false;
     string_is_ready = false;
-    input_marker = "> ";
+    input_marker = ":: ";
+    history_current_position = 0;
+}
+
+void REPL::add_history() {
+    if (history.size() >= 100) {
+        history.erase(history.begin());
+    }
+
+    history.push_back(current_str);
+}
+
+void REPL::clear() {
+    int curr_input_length = current_str.length() + input_marker.length();
+
+    for (int i = 0; i < curr_input_length; i++) {
+        printf("\b \b");
+    }
 }
 
 void REPL::rewrite() {
@@ -51,22 +68,47 @@ void REPL::read() {
             curr_char = Conio::getche();
             if (curr_char == 65) {
                 // Up
-                // TODO: Go up in the history
+                // TODO: Fix this - It's doing it in the wrong order
+                if (history_current_position < history.size()) {
+                    clear();
+
+                    current_str = history.at(history.size() - 1 - history_current_position);
+                    history_current_position++;
+
+                    rewrite();
+                }
             } else if (curr_char == 66) {
                 // Down
-                // TODO: Go down in the history
+                if (history_current_position != 0) {
+                    clear();
+
+                    if (history_current_position - 1 > 0) {
+                        current_str = history.at(history.size() + 1 - history_current_position);
+                        history_current_position--;
+                    } else {
+                        history_current_position = 0;
+                        current_str = "";
+                    }
+
+                    rewrite();
+                }
             }
         }
     } else if (curr_char != 10) {
         // Others
-        char *char_str = (char*)malloc(2 * sizeof(char));
+        char *char_str = new char[2];
         char_str[0] = curr_char;
         char_str[1] = '\0';
 
         current_str.append(char_str);
         printf("%c", curr_char);
+
+        delete [] char_str;
     } else {
         // Return
+        add_history();
+        history_current_position = 0;
+
         current_str.append("\r\n");
         printf("\n");
 

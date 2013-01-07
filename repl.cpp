@@ -68,7 +68,6 @@ void REPL::read() {
             curr_char = Conio::getche();
             if (curr_char == 65) {
                 // Up
-                // TODO: Fix this - It's doing it in the wrong order
                 if (history_current_position < history.size()) {
                     clear();
 

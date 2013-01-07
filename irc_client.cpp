@@ -73,16 +73,10 @@ void *IRC_Client::handle_recv(void) {
             cout << buffer;
         } else {
             string str_buffer(buffer);
-            int diff = (repl.current_str.length() + 2) - str_buffer.length();
-            cout << repl.current_str.length() + 2 << endl;
+            int curr_input_length = repl.current_str.length() + 2;
 
-            if (diff > 0) {
-                for (int i = 0; i < diff; i++) {
-                    cout << "Found - ";
-                    str_buffer.append(" ");
-                }
-
-                cout << endl;
+            for (int i = 0; i < curr_input_length; i++) {
+                printf("\b \b");
             }
 
             cout << "\r" << str_buffer;
@@ -132,7 +126,10 @@ void IRC_Client::start_connection() {
             just_connected = false;
         }
 
-        send_data(repl.read().c_str());
-        cout << repl.current_str << endl;
+        repl.read();
+
+        if (repl.string_is_ready) {
+            send_data(repl.current_str.c_str());
+        }
     }
 }

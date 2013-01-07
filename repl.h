@@ -12,6 +12,7 @@
 class REPL {
     public:
         bool has_started;
+        bool string_is_ready;
         std::string input_marker;
         std::string current_str;
 
@@ -20,7 +21,7 @@ class REPL {
         //~REPL();
 
         void rewrite();
-        std::string read();
+        void read();
         void eval();
 };
 

@@ -9,6 +9,7 @@
 #define IRC_CLIENT_H_
 
 #include <string>
+#include <vector>
 #include "repl.h"
 
 class IRC_Client {
@@ -23,6 +24,7 @@ class IRC_Client {
     public:
         pthread_t thread;
         REPL repl;
+        //std::vector<Channel> channels;
 
         // Server configuration.
         std::string server;

@@ -10,7 +10,9 @@
 
 #include <string>
 #include <vector>
+
 #include "repl.h"
+#include "channels.h"
 
 class IRC_Client {
     private:
@@ -24,7 +26,7 @@ class IRC_Client {
     public:
         pthread_t thread;
         REPL repl;
-        //std::vector<Channel> channels;
+        Channels channels;
 
         // Server configuration.
         std::string server;

@@ -24,6 +24,7 @@
 
 #include "irc_client.h"
 #include "message.h"
+#include "channels.h"
 #include "color.h"
 
 #define MAXDATASIZE 256
@@ -66,7 +67,9 @@ void IRC_Client::message_handler(char *buffer) {
             }
         } else if (message.get_reply_code()) {
             //unsigned int reply_code = message.get_reply_code();
-            str_buffer = string(YELLOW) + "<server> " + string(RESET) + arguments.at(2);
+            str_buffer = string(YELLOW) + "<server> " + string(RESET) + arguments.at(2) + "\r\n";
+        } else if (message.get_command() == "JOIN") {
+            channels.add(arguments.at(0).substr(1));
         }
 
         if (!repl.has_started) {

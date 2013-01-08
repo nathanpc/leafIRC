@@ -24,6 +24,7 @@
 
 #include "irc_client.h"
 #include "message.h"
+#include "color.h"
 
 #define MAXDATASIZE 256
 using namespace std;
@@ -50,9 +51,27 @@ bool IRC_Client::send_data(string data) {
 
 void IRC_Client::message_handler(char *buffer) {
     Message message(buffer);
+    string str_buffer(buffer);
 
     if (message.get_command() == "PING") {
         IRC_Client::send_data("PONG " + message.get_command_args().at(0) + "\r\n");
+    } else {
+        vector<string> arguments = message.get_command_args();
+
+        if (message.get_command() == "PRIVMSG") {
+            if (arguments.at(0).at(0) == '#') {
+                // Channel message.
+                str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
+            }
+        }
+
+        if (!repl.has_started) {
+            cout << str_buffer;
+        } else {
+            repl.clear();
+            cout << "\r" << str_buffer;
+            repl.rewrite();
+        }
     }
 }
 
@@ -64,16 +83,6 @@ void *IRC_Client::handle_recv(void) {
     while (true) {
         numbytes = recv(socket_descriptor, buffer, MAXDATASIZE - 1, 0);
         buffer[numbytes] = '\0';
-
-        if (!repl.has_started) {
-            cout << buffer;
-        } else {
-            string str_buffer(buffer);
-
-            repl.clear();
-            cout << "\r" << str_buffer;
-            repl.rewrite();
-        }
  
         message_handler(buffer);    
 

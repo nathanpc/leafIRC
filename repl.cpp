@@ -10,12 +10,13 @@
 
 #include "repl.h"
 #include "conio/conio.h"
+#include "color.h"
 using namespace std;
 
 REPL::REPL() {
     has_started = false;
     string_is_ready = false;
-    input_marker = ":: ";
+    input_marker = string(BOLDCYAN) + ":: " + string(RESET);
     history_current_position = 0;
 }
 

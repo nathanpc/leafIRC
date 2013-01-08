@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include "message.h"
 using namespace std;
@@ -44,6 +45,17 @@ string Message::parse_msg() {
 
 string Message::strip_end_newline(string line) {
     return line.erase(line.find("\r\n"), 2);
+}
+
+unsigned int Message::get_reply_code() {
+    string reply_code_str = raw.substr(raw.find(" "), 4);
+    unsigned int reply_code = 0;
+
+    if (stringstream(reply_code_str) >> reply_code) {
+        return reply_code;
+    }
+
+    return 0;
 }
 
 string Message::get_nickname() {

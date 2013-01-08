@@ -26,6 +26,7 @@ class Message {
         // Constructor.
         Message(char *_raw);
 
+        unsigned int get_reply_code();
         std::string get_nickname();
         std::string get_command();
         std::vector<std::string> get_command_args();

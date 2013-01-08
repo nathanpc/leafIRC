@@ -56,6 +56,7 @@ void IRC_Client::message_handler(char *buffer) {
     if (message.get_command() == "PING") {
         IRC_Client::send_data("PONG " + message.get_command_args().at(0) + "\r\n");
     } else {
+        // Messages that need to be echoed.
         vector<string> arguments = message.get_command_args();
 
         if (message.get_command() == "PRIVMSG") {
@@ -63,6 +64,9 @@ void IRC_Client::message_handler(char *buffer) {
                 // Channel message.
                 str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
             }
+        } else if (message.get_reply_code()) {
+            //unsigned int reply_code = message.get_reply_code();
+            str_buffer = string(YELLOW) + "<server> " + string(RESET) + arguments.at(2);
         }
 
         if (!repl.has_started) {

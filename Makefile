@@ -1,14 +1,17 @@
-CC=g++
-CPPFLAGS=-Wall
-OBJ=leaf.o irc_client.o message.o channels.o conio/conio.o repl.o
+CXX = g++
+CXXFLAGS = -Wall
+OBJ = leaf.o irc_client.o message.o channels.o conio/conio.o repl.o
 
 all: leaf
 
 leaf: $(OBJ)
-	$(CC) $^ -o $@
+	$(CXX) $^ -o $@
+
+debug: CXXFLAGS += -g
+debug: leaf
 
 %.o: %.c
-	$(CC) $(CPPFLAGS) $<
+	$(CXX) $(CXXFLAGS) $<
 
 clean:
 	rm -rf *.o

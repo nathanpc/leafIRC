@@ -1,4 +1,4 @@
-CXX = g++
+CXX = clang++
 CXXFLAGS = -Wall
 OBJ = leaf.o irc_client.o message.o config.o channels.o conio/conio.o repl.o
 

@@ -14,11 +14,11 @@
 class Channels {
     public:
         std::vector<std::string> list;
-        unsigned int current;
+        int current;
         Config config;
 
         // Constructor.
-        //Channels();
+        Channels();
 
         void add(std::string channel);
         void cache(std::string channel, std::string line);

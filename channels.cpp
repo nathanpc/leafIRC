@@ -14,6 +14,10 @@
 #include "config.h"
 using namespace std;
 
+Channels::Channels() {
+    current = -1;
+}
+
 void Channels::add(string channel) {
     list.push_back(channel);
     current = list.size() - 1;

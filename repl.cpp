@@ -107,15 +107,17 @@ void REPL::read() {
         delete [] char_str;
     } else {
         // Return
-        add_history();
-        history_current_position = 0;
+        if (current_str != "") {
+            add_history();
+            history_current_position = 0;
 
-        if (eval()) {
-            current_str.append("\r\n");
+            if (eval()) {
+                current_str.append("\r\n");
+            }
+
+            printf("\n");
+            string_is_ready = true;
         }
-
-        printf("\n");
-        string_is_ready = true;
     }
 }
 

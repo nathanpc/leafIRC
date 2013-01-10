@@ -71,10 +71,13 @@ void IRC_Client::message_handler(char *buffer) {
                 str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
                 channels.cache(arguments.at(0).substr(1), str_buffer);
             }
-        } else if (message.get_reply_code()) {
-            //unsigned int reply_code = message.get_reply_code();
-            str_buffer = string(YELLOW) + "<server> " + string(RESET) + arguments.at(2) + "\r\n";
-        } else if (message.get_command() == "JOIN") {
+        } /*else if (message.get_reply_code()) {
+            // TODO: Fix this. Shitty MOTD is fucking this up.
+            unsigned int reply_code = message.get_reply_code();
+            if (reply_code != 372) {
+                str_buffer = string(YELLOW) + "<server> " + string(RESET) + arguments.at(2) + "\r\n";
+            }
+        }*/ else if (message.get_command() == "JOIN") {
             channels.add(arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
         }
 
@@ -157,12 +160,14 @@ void IRC_Client::start_connection() {
                     cout << channels.load_cache(repl.external_command.at(1));
                     repl.current_str = "";
                 } else if (command == "message") {
-                    string send_msg = "PRIVMSG #" + channels.list.at(channels.current) + " :" + repl.current_str;
+                    /*if (channels.current != -1) {
+                        string send_msg = "PRIVMSG #" + channels.list.at(channels.current) + " :" + repl.current_str;
 
-                    // TODO: Get nick.
-                    string cache_msg = string(BOLDWHITE) + "<Me> " + string(RESET) + repl.current_str;
-                    channels.cache(channels.list.at(channels.current), cache_msg);
-                    send_data(send_msg.c_str());
+                        // TODO: Get nick.
+                        string cache_msg = string(BOLDWHITE) + "<Me> " + string(RESET) + repl.current_str;
+                        channels.cache(channels.list.at(channels.current), cache_msg);
+                        send_data(send_msg.c_str());
+                    }*/
                 }
             } else {
                 // Just send raw stuff.

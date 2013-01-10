@@ -1,7 +1,7 @@
 // Credits: http://stackoverflow.com/a/7469410/126353
 
 #include <termios.h>
-#include <stdio.h>
+#include <cstdio>
 
 #include "conio.h"
 using namespace std;

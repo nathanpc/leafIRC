@@ -14,8 +14,9 @@
 #include <netdb.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>

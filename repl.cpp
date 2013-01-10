@@ -6,7 +6,8 @@
 
 #include <iostream>
 #include <string>
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "repl.h"
 #include "conio/conio.h"

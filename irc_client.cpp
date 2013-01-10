@@ -59,25 +59,33 @@ void IRC_Client::message_handler(char *buffer) {
     } else {
         // Messages that need to be echoed.
         vector<string> arguments = message.get_command_args();
+        bool echo = true;
 
         if (message.get_command() == "PRIVMSG") {
             if (arguments.at(0).at(0) == '#') {
                 // Channel message.
+                if (arguments.at(0) != "#" + channels.list.at(channels.current)) {
+                    echo = false;
+                }
+
                 str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
+                channels.cache(arguments.at(0).substr(1), str_buffer);
             }
         } else if (message.get_reply_code()) {
             //unsigned int reply_code = message.get_reply_code();
             str_buffer = string(YELLOW) + "<server> " + string(RESET) + arguments.at(2) + "\r\n";
         } else if (message.get_command() == "JOIN") {
-            channels.add(arguments.at(0).substr(1));
+            channels.add(arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
         }
 
-        if (!repl.has_started) {
-            cout << str_buffer;
-        } else {
-            repl.clear();
-            cout << "\r" << str_buffer;
-            repl.rewrite();
+        if (echo) {
+            if (!repl.has_started) {
+                cout << str_buffer;
+            } else {
+                repl.clear();
+                cout << "\r" << str_buffer;
+                repl.rewrite();
+            }
         }
     }
 }

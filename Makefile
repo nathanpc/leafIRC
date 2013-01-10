@@ -1,13 +1,13 @@
 CXX = g++
 CXXFLAGS = -Wall
-OBJ = leaf.o irc_client.o message.o channels.o conio/conio.o repl.o
+OBJ = leaf.o irc_client.o message.o config.o channels.o conio/conio.o repl.o
 
 all: leaf
 
 leaf: $(OBJ)
 	$(CXX) $^ -o $@
 
-debug: CXXFLAGS += -g
+debug: CXXFLAGS += -g3
 debug: leaf
 
 %.o: %.c

@@ -8,22 +8,47 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <sys/stat.h>
 
 #include "channels.h"
-#include "locations.h"
+#include "config.h"
 using namespace std;
 
-Channels::Channels() {
-    history_dir = string(HOME_DIR) + string(HISTORY_DIR);
+void Channels::add(string channel) {
+    list.push_back(channel);
+    current = list.size() - 1;
 }
 
-void Channels::add(string name) {
-    list.push_back(name);
+void Channels::cache(string channel, string line) {
+    unsigned int index = find_index(channel);
+    string filename = config.cache_filename(channel, index);
+    ofstream file;
+
+
+    config.check_dirs("history");
+    file.open(filename.c_str(), ios::out | ios::app);
+    file << line;
+    file.close();
 }
 
-void Channels::remove(string name) {
+unsigned int Channels::find_index(string channel) {
+    if (list.at(current) != channel) {
+        for (size_t i = 0; i < list.size(); i++) {
+            if (list.at(i) == channel) {
+                return i;
+                break;
+            }
+        }
+    } else {
+        return current;
+    }
+
+    return NULL;
+}
+
+void Channels::remove(string channel) {
     for (size_t i = 0; i < list.size(); i++) {
-        if (list.at(i) == name) {
+        if (list.at(i) == channel) {
             remove(i);
             break;
         }
@@ -32,8 +57,4 @@ void Channels::remove(string name) {
 
 void Channels::remove(unsigned int index) {
     list.erase(list.begin() + index);
-}
-
-void Channels::cache_name(string channel_name, unsigned int index) {
-    string file_name = index + "_" + channel_name;
 }

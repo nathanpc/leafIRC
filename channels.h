@@ -9,21 +9,21 @@
 
 #include <string>
 #include <vector>
+#include "config.h"
 
 class Channels {
-    private:
-        std::string history_dir;
-
-        void cache_name(std::string channel_name, unsigned int index);
-
     public:
         std::vector<std::string> list;
+        unsigned int current;
+        Config config;
 
         // Constructor.
-        Channels();
+        //Channels();
 
-        void add(std::string name);
-        void remove(std::string name);
+        void add(std::string channel);
+        void cache(std::string channel, std::string line);
+        unsigned int find_index(std::string channel);
+        void remove(std::string channel);
         void remove(unsigned int index);
 };
 

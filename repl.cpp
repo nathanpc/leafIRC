@@ -47,6 +47,7 @@ void REPL::read() {
     if (string_is_ready) {
         string_is_ready = false;
         current_str = "";
+        external_command.clear();
 
         cout << input_marker << flush;
     }
@@ -109,13 +110,41 @@ void REPL::read() {
         add_history();
         history_current_position = 0;
 
-        current_str.append("\r\n");
-        printf("\n");
+        if (eval()) {
+            current_str.append("\r\n");
+        }
 
+        printf("\n");
         string_is_ready = true;
     }
 }
 
-void REPL::eval() {
-    
+bool REPL::eval() {
+    if (current_str != "" && current_str.at(0) == '/') {
+        // Command
+        string command = current_str.substr(1, current_str.find(" ") - 1);
+
+        if (command == "switch") {
+            // Switch the current channel.
+            string switch_channel = current_str.substr(current_str.find(" ") + 1);
+
+            if (switch_channel.at(0) == '#') {
+                switch_channel = switch_channel.substr(1);
+            }
+
+            external_command.push_back("switch");
+            external_command.push_back(switch_channel);
+        } else {
+            // Common IRC command.
+            current_str = current_str.substr(1);
+            return true;
+        }
+
+        return false;
+    } else {
+        // Message
+        external_command.push_back("message");
+
+        return true;
+    }
 }

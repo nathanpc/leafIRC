@@ -145,7 +145,29 @@ void IRC_Client::start_connection() {
         repl.read();
 
         if (repl.string_is_ready) {
-            send_data(repl.current_str.c_str());
+            if (!repl.external_command.empty()) {
+                // Command.
+                string command = repl.external_command.at(0);
+
+                if (command == "switch") {
+                    channels.current = channels.find_index(repl.external_command.at(1));
+
+                    repl.clear();
+                    cout << "\r" << BOLDBLUE << "Switching to #" << repl.external_command.at(1) << RESET << "\r\n";
+                    cout << channels.load_cache(repl.external_command.at(1));
+                    repl.current_str = "";
+                } else if (command == "message") {
+                    string send_msg = "PRIVMSG #" + channels.list.at(channels.current) + " :" + repl.current_str;
+
+                    // TODO: Get nick.
+                    string cache_msg = string(BOLDWHITE) + "<Me> " + string(RESET) + repl.current_str;
+                    channels.cache(channels.list.at(channels.current), cache_msg);
+                    send_data(send_msg.c_str());
+                }
+            } else {
+                // Just send raw stuff.
+                send_data(repl.current_str.c_str());
+            }
         }
     }
 }

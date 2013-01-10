@@ -22,6 +22,7 @@ class Channels {
 
         void add(std::string channel);
         void cache(std::string channel, std::string line);
+        std::string load_cache(std::string channel);
         unsigned int find_index(std::string channel);
         void remove(std::string channel);
         void remove(unsigned int index);

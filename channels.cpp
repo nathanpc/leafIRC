@@ -27,8 +27,28 @@ void Channels::cache(string channel, string line) {
 
     config.check_dirs("history");
     file.open(filename.c_str(), ios::out | ios::app);
-    file << line;
-    file.close();
+
+    if (file.is_open()) {
+        file << line;
+        file.close();
+    }
+}
+
+string Channels::load_cache(string channel) {
+    unsigned int index = find_index(channel);
+    string filename = config.cache_filename(channel, index);
+    ifstream file;
+    string content;
+
+    config.check_dirs("history");
+    file.open(filename.c_str(), ios::in);
+
+    if (file.is_open()) {
+        content.assign((istreambuf_iterator<char>(file)), (istreambuf_iterator<char>()));        
+        file.close();
+    }
+
+    return content;
 }
 
 unsigned int Channels::find_index(string channel) {

@@ -20,6 +20,8 @@ using namespace std;
 Config::Config() {
     config_dir = expand_path(HOME_DIR);
     history_dir = config_dir + string(HISTORY_DIR);
+
+    clear_cache();
 }
 
 string Config::expand_path(const char *directory) {
@@ -48,6 +50,12 @@ void Config::check_dirs(string optional_dir) {
 
     if (optional_dir == "history") {
         build_dir(history_dir.c_str());
+    }
+}
+
+void Config::clear_cache() {
+    if (directory_exists(history_dir.c_str())) {
+        system(string("rm -r " + history_dir).c_str());
     }
 }
 

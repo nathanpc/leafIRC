@@ -20,6 +20,7 @@ class REPL {
         bool has_started;
         bool string_is_ready;
         std::string input_marker;
+        std::vector<std::string> external_command;
         
         std::string current_str;
         unsigned int history_current_position;
@@ -33,7 +34,7 @@ class REPL {
         void rewrite();
 
         void read();
-        void eval();
+        bool eval();
 };
 
 #endif

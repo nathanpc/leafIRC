@@ -18,6 +18,7 @@ class Config {
         std::string expand_path(const char *directory);
         bool directory_exists(const char *directory);
         void build_dir(const char *directory);
+        void clear_cache();
 
     public:
         // Constructor.

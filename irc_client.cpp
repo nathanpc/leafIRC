@@ -14,8 +14,9 @@
 #include <netdb.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
@@ -26,6 +27,8 @@
 #include "message.h"
 #include "channels.h"
 #include "color.h"
+
+#define DEBUG 1
 
 #define MAXDATASIZE 256
 using namespace std;
@@ -51,10 +54,18 @@ bool IRC_Client::send_data(string data) {
 }
 
 void IRC_Client::message_handler(char *buffer) {
+	// Check if the buffer is empty
+	if(strlen(buffer) == 0)
+	{
+		cerr << "Error: \"buffer is empty\"\n";
+		return;
+	}
+	
     Message message(buffer);
     string str_buffer(buffer);
 
     if (message.get_command() == "PING") {
+    	// TODO:  There is an assumption here that message.get_command_args() is not empty
         IRC_Client::send_data("PONG " + message.get_command_args().at(0) + "\r\n");
     } else {
         // Messages that need to be echoed.
@@ -68,7 +79,7 @@ void IRC_Client::message_handler(char *buffer) {
                     echo = false;
                 }
 
-                str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
+                str_buffer = string(BOLDWHITE) + "<" + message.get_username() + "> " + string(RESET) + arguments.at(1) + "\r\n";
                 channels.cache(arguments.at(0).substr(1), str_buffer);
             }
         } /*else if (message.get_reply_code()) {
@@ -78,16 +89,32 @@ void IRC_Client::message_handler(char *buffer) {
                 str_buffer = string(YELLOW) + "<server> " + string(RESET) + arguments.at(2) + "\r\n";
             }
         }*/ else if (message.get_command() == "JOIN") {
-            channels.add(arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
+            if(!arguments.empty())
+            {
+            	channels.add(
+            		arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
+            }
         }
 
-        if (echo) {
-            if (!repl.has_started) {
+        if (echo)
+        {
+            if (!repl.has_started)
+            {
+#ifdef DEBUG
+				cout << "\n" << message << "\n";
+#else
                 cout << str_buffer;
-            } else {
+#endif
+            }
+            else
+            {
+#ifdef DEBUG
+				cout << message << "\n";
+#else
                 repl.clear();
                 cout << "\r" << str_buffer;
                 repl.rewrite();
+#endif
             }
         }
     }
@@ -98,16 +125,20 @@ void *IRC_Client::handle_recv(void) {
     int numbytes;
     char buffer[MAXDATASIZE];
 
-    while (true) {
+    numbytes = recv(socket_descriptor, buffer, MAXDATASIZE - 1, 0);
+    buffer[numbytes] = '\0';
+
+    while (numbytes != 0)
+    {
+        // Handle the received message
+        message_handler(buffer);
+        
+        // Get more messages from the socket and null-terminate the buffer
         numbytes = recv(socket_descriptor, buffer, MAXDATASIZE - 1, 0);
         buffer[numbytes] = '\0';
- 
-        message_handler(buffer);    
-
-        if (numbytes == 0) {
-            cout << "Connection terminated" << endl;
-        }
     }
+    
+    return NULL;
 }
 
 void IRC_Client::start_connection() {
@@ -118,7 +149,8 @@ void IRC_Client::start_connection() {
     hints.ai_socktype = SOCK_STREAM;
 
     int res;
-    if ((res = getaddrinfo(server.c_str(), port.c_str(), &hints, &servinfo)) != 0) {
+    if ((res = getaddrinfo(server.c_str(), port.c_str(), &hints, &servinfo)) != 0)
+    {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
     }
 
@@ -128,7 +160,8 @@ void IRC_Client::start_connection() {
     }
 
     // Connect!
-    if (connect(socket_descriptor, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
+    if (connect(socket_descriptor, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
+    {
         close(socket_descriptor);
         perror("Couldn't connect");
     }

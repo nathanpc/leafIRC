@@ -13,6 +13,7 @@
 class Message {
     private:
         std::string parse_server();
+        std::string parse_username();
         std::string parse_hostname();
         std::string parse_command();
         std::string parse_arguments();
@@ -27,10 +28,13 @@ class Message {
         std::vector<std::string> args;
 
         // Constructor.
-        Message(const std::string& s);
+        Message(const char* s);
 
         unsigned int get_reply_code();
-        std::string get_nickname();
+        
+        std::string get_server();
+        std::string get_username();
+        std::string get_hostname();
         std::string get_command();
         std::vector<std::string> get_command_args();
 };

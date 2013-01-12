@@ -14,6 +14,6 @@ debug: leaf
 	$(CXX) $(CXXFLAGS) $<
 
 clean:
-	rm -rf *.o
+	rm -rf *.o core
 	rm -rf conio/*.o
 	rm -rf leaf

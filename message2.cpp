@@ -9,14 +9,20 @@
 #include <vector>
 #include <sstream>
 
-#include "message.h"
+#include "message2.h"
 using namespace std;
 
-Message::Message(const string& s)
+Message::Message(const char* s)
 {
-	raw = strip_end_newline(s);
-	parse_server();
-	parse_hostname();
+	raw = strip_end_newline(string(s));
+	
+	// Check when parsing for the server, if the message begins with NOTICE
+	if(parse_server() != "NOTICE")
+	{
+		parse_username();
+		parse_hostname();
+	}
+	
 	parse_command();
 	parse_arguments();
 }
@@ -27,7 +33,15 @@ string Message::parse_server()
 	// It must not be empty and the first char should be a colon ':'
 	if(raw.empty() || raw[0] != ':')
 	{
-		return string();
+		// Check for the "NOTICE" command
+		if(raw.substr(0, string("NOTICE").size()) == "NOTICE")
+		{
+			return "NOTICE";
+		}
+		else
+		{
+			return string();
+		}
 	}
 	
 	size_t exclPos;
@@ -47,31 +61,38 @@ string Message::parse_server()
 	return server;
 }
 
-string Message::parse_hostname()
+string Message::parse_username()
 {
 	size_t pos;
 	
-	// Get the index for the at symbol '@' and check if it is not found
+	// Look for the at symbol, if not found return an empty string
 	if((pos = raw.find('@')) == string::npos)
 	{
 		return string();
 	}
 	
-	// Parse the username and remove it and the '@' from the raw string
+	// Save the username and remove it and the at symbol from the raw string
 	username = raw.substr(0, pos);
 	raw.erase(0, ++pos);
 	
-	// Get the index of the next space character and check if it's not found
+	return username;
+}
+
+string Message::parse_hostname()
+{
+	size_t pos;
+	
+	// Get the index for the first space character and check if it is not found
 	if((pos = raw.find(' ')) == string::npos)
 	{
 		return string();
 	}
 	
-	// Parse the hostname and remove it and the space from the raw string
+	// Save the hostname and remove it and the space from the raw string
 	hostname = raw.substr(0, pos);
 	raw.erase(0, ++pos);
 	
-	return username + "@" + hostname;
+	return hostname;
 }
 
 string Message::parse_command()
@@ -94,21 +115,25 @@ string Message::parse_arguments()
 		// Parse the argument(s) from the msg string
 		while(!raw.empty())
 		{
-		    size_t current_pos = raw.find(" ");
+		    size_t current_pos;
 		    
-		    // Check if a space character wasn't found
-		    if(current_pos == string::npos)
+		    // First check if this is the last "colon" argument
+		    if(raw[0] == ':')
 		    {
-				args.push_back(raw.substr(raw[0] == ':' ? 1 : 0));
+		    	// Push the last argument onto vector and erase the raw string
+		    	args.push_back(raw.substr(1));
+		    	raw.clear();
 				return args.back();
 		    }
-
-		    // Space was found so add the last "word" as an argument,
+		    
+		    // We don't need to check if it was found or not
+		    current_pos = raw.find(' ');
+		    
+		    // Add the last parsed argument to the arguments vector
 		    args.push_back(raw.substr(0, current_pos));
 		    
-		    // Now remove that last argument from the msg string,
-		    // and increment the current_pos to skip the space character.
-		    raw.erase(0, current_pos++);
+		    // Erase the last parsed argument from the raw string, possibly making it empty
+		    raw.erase(0, current_pos == string::npos ? current_pos : current_pos + 1);
 		}
 	}
 	
@@ -132,9 +157,19 @@ unsigned int Message::get_reply_code()
     return 0;
 }
 
-string Message::get_nickname()
+string Message::get_server()
 {
-    return hostname.substr(0, hostname.find("!"));
+	return server;
+}
+
+string Message::get_username()
+{
+	return username;
+}
+
+string Message::get_hostname()
+{
+	return hostname;
 }
 
 string Message::get_command()

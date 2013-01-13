@@ -89,12 +89,8 @@ bool Message::parse()
 		parse_username();
 		parse_hostname();
 	}
-	// Check if the raw message begins with a command or not
-	else if(cmd.empty())
-	{
-		parse_command();
-	}
-	
+
+	parse_command();
 	parse_arguments();
 	
 	return true;
@@ -106,12 +102,6 @@ bool Message::parse_server()
 	// It must not be empty and the first char should be a colon ':'
 	if(raw.empty() || raw[0] != ':')
 	{
-		// Check for the "NOTICE" command
-		if(raw.substr(0, string("NOTICE").size()) == "NOTICE")
-		{
-			cmd = "NOTICE";
-		}
-		
 		return false;
 	}
 	

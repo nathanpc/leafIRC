@@ -131,7 +131,7 @@ void *IRC_Client::handle_recv(void) {
     static string sbuf;
     size_t pos;
 
-    while((numbytes = recv(sd, buffer, MAXDATASIZE - 1, 0)) != 0)
+    while((numbytes = recv(sd, buffer, MAXDATASIZE - 1, 0)) > 0)
     {
        	// NULL-terminate the buffer
        	buffer[numbytes] = '\0';
@@ -140,7 +140,7 @@ void *IRC_Client::handle_recv(void) {
        	sbuf += buffer;
         
         // Search for the CR (\r) character followed by the LF (\n) character,
-        if((pos = sbuf.find("\r\n")) != string::npos)
+        while((pos = sbuf.find("\r\n")) != string::npos)
         {
         	// Copy the whole message, including the CRLF at the end
         	string msg = sbuf.substr(0, pos + 2);
@@ -152,6 +152,16 @@ void *IRC_Client::handle_recv(void) {
 		    message_handler(msg.c_str());
 		}
     }
+    
+    // Connection closed or there was an error
+    if(numbytes == -1)
+    {
+    	perror("IRC_Client::handle_recv");
+    }
+    
+    repl.clear();
+	system("stty cooked");
+    exit(EXIT_SUCCESS);
     
     return NULL;
 }
@@ -208,14 +218,14 @@ void IRC_Client::start_connection() {
                     cout << channels.load_cache(repl.external_command.at(1));
                     repl.current_str = "";
                 } else if (command == "message") {
-                    /*if (channels.current != -1) {
+                    if (channels.current != -1) {
                         string send_msg = "PRIVMSG #" + channels.list.at(channels.current) + " :" + repl.current_str;
 
                         // TODO: Get nick.
                         string cache_msg = string(BOLDWHITE) + "<Me> " + string(RESET) + repl.current_str;
                         channels.cache(channels.list.at(channels.current), cache_msg);
                         send_data(send_msg.c_str());
-                    }*/
+                    }
                 }
             } else {
                 // Just send raw stuff.

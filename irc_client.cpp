@@ -28,8 +28,6 @@
 #include "channels.h"
 #include "color.h"
 
-#define DEBUG 1
-
 #define MAXDATASIZE 256
 using namespace std;
 
@@ -48,17 +46,23 @@ void IRC_Client::setup_user(string _nick, string _username, string _realname) {
 bool IRC_Client::send_data(string data) {
     const char *buffer = data.c_str();
     int len = strlen(buffer);
-    int bytes_sent = send(socket_descriptor, buffer, len, 0);
+    int bytes_sent;
+    
+    if((bytes_sent = send(sd, buffer, len, 0)) == -1)
+    {
+    	perror("IRC_Client::send_data(): send");
+    	exit(EXIT_FAILURE);
+    }
 
     return bytes_sent;
 }
 
-void IRC_Client::message_handler(char *buffer) {
+void IRC_Client::message_handler(const char *buffer) {
 	// Check if the buffer is empty
 	if(strlen(buffer) == 0)
 	{
 		cerr << "Error: \"buffer is empty\"\n";
-		return;
+		exit(0);
 	}
 	
     Message message(buffer);
@@ -108,13 +112,13 @@ void IRC_Client::message_handler(char *buffer) {
             }
             else
             {
+				repl.clear();
 #ifdef DEBUG
 				cout << message << "\n";
 #else
-                repl.clear();
                 cout << "\r" << str_buffer;
-                repl.rewrite();
 #endif
+				repl.rewrite();
             }
         }
     }
@@ -124,19 +128,40 @@ void *IRC_Client::handle_recv(void) {
     // recv some data.
     int numbytes;
     char buffer[MAXDATASIZE];
+    static string sbuf;
+    size_t pos;
 
-    numbytes = recv(socket_descriptor, buffer, MAXDATASIZE - 1, 0);
-    buffer[numbytes] = '\0';
-
-    while (numbytes != 0)
+    while((numbytes = recv(sd, buffer, MAXDATASIZE - 1, 0)) > 0)
     {
-        // Handle the received message
-        message_handler(buffer);
+       	// NULL-terminate the buffer
+       	buffer[numbytes] = '\0';
+       	
+       	// Append the buffer instead of assigning so we don't lose anything
+       	sbuf += buffer;
         
-        // Get more messages from the socket and null-terminate the buffer
-        numbytes = recv(socket_descriptor, buffer, MAXDATASIZE - 1, 0);
-        buffer[numbytes] = '\0';
+        // Search for the CR (\r) character followed by the LF (\n) character,
+        while((pos = sbuf.find("\r\n")) != string::npos)
+        {
+        	// Copy the whole message, including the CRLF at the end
+        	string msg = sbuf.substr(0, pos + 2);
+        	
+        	// Erase the msg from sbuf
+        	sbuf.erase(0, msg.size());
+        	
+		    // Handle the received message
+		    message_handler(msg.c_str());
+		}
     }
+    
+    // Connection closed or there was an error
+    if(numbytes == -1)
+    {
+    	perror("IRC_Client::handle_recv");
+    }
+    
+    repl.clear();
+	system("stty cooked");
+    exit(EXIT_SUCCESS);
     
     return NULL;
 }
@@ -155,14 +180,14 @@ void IRC_Client::start_connection() {
     }
 
     // Setup the socket descriptor.
-    if ((socket_descriptor = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1) {
+    if ((sd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1) {
         perror("Error while assigning the socket descriptor");
     }
 
     // Connect!
-    if (connect(socket_descriptor, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
+    if (connect(sd, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
     {
-        close(socket_descriptor);
+        close(sd);
         perror("Couldn't connect");
     }
 
@@ -193,14 +218,14 @@ void IRC_Client::start_connection() {
                     cout << channels.load_cache(repl.external_command.at(1));
                     repl.current_str = "";
                 } else if (command == "message") {
-                    /*if (channels.current != -1) {
+                    if (channels.current != -1) {
                         string send_msg = "PRIVMSG #" + channels.list.at(channels.current) + " :" + repl.current_str;
 
                         // TODO: Get nick.
                         string cache_msg = string(BOLDWHITE) + "<Me> " + string(RESET) + repl.current_str;
                         channels.cache(channels.list.at(channels.current), cache_msg);
                         send_data(send_msg.c_str());
-                    }*/
+                    }
                 }
             } else {
                 // Just send raw stuff.

@@ -16,10 +16,10 @@
 
 class IRC_Client {
     private:
-        int socket_descriptor;
+        int sd;			// socket_descriptor
 
         bool send_data(std::string data);
-        void message_handler(char *buffer);
+        void message_handler(const char *buffer);
         void *handle_recv(void);
         static void *handle_recv_thread_helper(void *context) { return ((IRC_Client *)context)->handle_recv(); }
 

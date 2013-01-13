@@ -21,12 +21,14 @@ class Message {
         std::string cmd;
         std::vector<std::string> args;
         
-        std::string parse_server();
+        bool parse_server();
         std::string parse_username();
         std::string parse_hostname();
         std::string parse_command();
         std::string parse_arguments();
         std::string strip_end_newline(std::string line);
+        
+        bool parse();
 
     public:
         // Constructor.

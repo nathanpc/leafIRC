@@ -15,8 +15,8 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    //IRC_Client client("irc.arcti.ca", "6667", "");
-    IRC_Client client("localhost", "6667", "");
+    IRC_Client client("irc.arcti.ca", "6667", "");
+    //IRC_Client client("localhost", "6667", "");
     client.setup_user("leafirc", "leafirc", "LeafIRC");
 
     Splash::print();

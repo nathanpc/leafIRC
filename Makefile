@@ -7,7 +7,7 @@ all: leaf
 leaf: $(OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-debug: CXXFLAGS += -g3
+debug: CXXFLAGS += -g3 -DDEBUG
 debug: leaf
 
 %.o: %.c

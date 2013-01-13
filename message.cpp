@@ -16,21 +16,13 @@ using namespace std;
 
 Message::Message(const char* s)
 {
-	if((raw = _raw = strip_end_newline(string(s))).empty())
+	if((raw = _raw = strip_end_newline(s)).empty())
 	{
-		cerr << "Error: \"message is empty\"\n";
+		cerr << "Message::Message() \"message is empty\"\n";
 		exit(0);
 	}
 	
-	// Check when parsing for the server, if the message begins with NOTICE
-	if(parse_server() != "NOTICE")
-	{
-		parse_username();
-		parse_hostname();
-	}
-	
-	parse_command();
-	parse_arguments();
+	parse();
 }
 
 static string changeNewlines(const string& s)
@@ -58,12 +50,14 @@ static string changeNewlines(const string& s)
 
 ostream& operator<<(ostream& out, const Message& m)
 {
-	out << "\nraw = \"" << changeNewlines(m._raw) << "\"\n" << "server = \""
-		<< changeNewlines(m.server) << "\"\tusername = \""
+#ifdef DEBUG
+	out << "\nraw = " << changeNewlines(m._raw) << "\n";
+	out << "server = \"" << changeNewlines(m.server) << "\"\tusername = \""
 		<< changeNewlines(m.username) << "\"\thostname = \""
 		<< changeNewlines(m.hostname) << "\"\tcommand = \""
 		<< changeNewlines(m.cmd) << "\"\narguments: ";
-	
+#endif
+		
 	if(m.args.empty())
 	{
 		out << "none\n";
@@ -87,38 +81,60 @@ ostream& operator<<(ostream& out, const Message& m)
 	return out;
 }
 
-string Message::parse_server()
+bool Message::parse()
+{
+	// Check when parsing for the server, if the message begins with NOTICE
+	if(parse_server())
+	{
+		parse_username();
+		parse_hostname();
+	}
+
+	parse_command();
+	parse_arguments();
+	
+	return true;
+}
+
+bool Message::parse_server()
 {
 	// Validate the raw string before we start parsing.
 	// It must not be empty and the first char should be a colon ':'
 	if(raw.empty() || raw[0] != ':')
 	{
-		// Check for the "NOTICE" command
-		if(raw.substr(0, string("NOTICE").size()) == "NOTICE")
-		{
-			return "NOTICE";
-		}
-		else
-		{
-			return string();
-		}
+		return false;
 	}
 	
-	size_t exclPos;
+	size_t exclPos, pos;
 	
 	// Get the index for the exclamation mark and check if it's not found
 	if((exclPos = raw.find('!')) == string::npos)
 	{
-		return string();
+		// Look for a space instead
+		if((pos = raw.find(' ')) != string::npos)
+		{
+			// Save the server/nick name from the raw string
+			server = raw.substr(0, pos);
+			
+			// Remove the server/nick name plus space char from the raw string
+			raw.erase(0, pos + 1);
+			
+			return false;
+		}
+		else
+		{
+			cerr << "Message::parse_server ~ \"invalid message\"\n";
+			exit(EXIT_FAILURE);
+		}
 	}
 	
 	// Save the server/nick name from the raw string
 	server = raw.substr(0, exclPos);
-	
+
 	// Remove the server/nick name plus exclamation mark from the raw string
 	raw.erase(0, exclPos + 1);
 	
-	return server;
+	return true;
 }
 
 string Message::parse_username()

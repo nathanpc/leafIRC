@@ -104,37 +104,39 @@ bool Message::parse_server()
 	{
 		return false;
 	}
-	
-	size_t exclPos, pos;
-	
-	// Get the index for the exclamation mark and check if it's not found
-	if((exclPos = raw.find('!')) == string::npos)
+	else if(raw[0] == ':')
 	{
-		// Look for a space instead
-		if((pos = raw.find(' ')) != string::npos)
+		raw.erase(0, 1);
+	}
+	
+	size_t pos;
+	bool ans = false;
+	
+	// Look for the first of either an exclamation mark or a space
+	for(pos = 0; pos < raw.size(); ++pos)
+	{
+		if(raw[pos] == '!')
 		{
-			// Save the server/nick name from the raw string
-			server = raw.substr(0, pos);
-			
-			// Remove the server/nick name plus space char from the raw string
-			raw.erase(0, pos + 1);
-			
-			return false;
+			ans = true;
+			break;
 		}
-		else
+		else if(raw[pos] == ' ')
 		{
-			cerr << "Message::parse_server ~ \"invalid message\"\n";
-			exit(EXIT_FAILURE);
+			ans = false;
+			break;
 		}
 	}
 	
-	// Save the server/nick name from the raw string
-	server = raw.substr(0, exclPos);
-
-	// Remove the server/nick name plus exclamation mark from the raw string
-	raw.erase(0, exclPos + 1);
+	// Check if neither a ! or a space were found
+	if(pos >= raw.size())
+	{
+		cerr << "Error: \"invalid IRC message\"\n";
+		exit(EXIT_FAILURE);
+	}
 	
-	return true;
+	server = raw.substr(0, pos);
+	raw.erase(0, pos + 1);
+	return ans;
 }
 
 string Message::parse_username()

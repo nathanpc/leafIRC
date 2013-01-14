@@ -17,6 +17,7 @@
 class IRC_Client {
     private:
         int sd;			// socket_descriptor
+        bool connected;
 
         bool send_data(std::string data);
         void message_handler(const char *buffer);

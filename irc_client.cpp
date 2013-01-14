@@ -99,7 +99,7 @@ void IRC_Client::message_handler(const char *buffer) {
             		arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
             }
         }
-
+		
         if (echo)
         {
             if (!repl.has_started)
@@ -157,11 +157,8 @@ void *IRC_Client::handle_recv(void) {
     if(numbytes == -1)
     {
     	perror("IRC_Client::handle_recv");
+    	exit(EXIT_FAILURE);
     }
-    
-    repl.clear();
-	system("stty cooked");
-    exit(EXIT_SUCCESS);
     
     return NULL;
 }
@@ -190,7 +187,7 @@ void IRC_Client::start_connection() {
         close(sd);
         perror("Couldn't connect");
     }
-
+    
     freeaddrinfo(servinfo);  // Free the server information, we don't need it anymore.
     pthread_create(&thread, NULL, &handle_recv_thread_helper, this);
 

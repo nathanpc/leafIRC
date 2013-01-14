@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 26
+/svn/!svn/ver/17/trunk/cpp
+END
+INIReader.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/17/trunk/cpp/INIReader.cpp
+END
+INIReaderTest.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/11/trunk/cpp/INIReaderTest.cpp
+END
+INIReader.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/!svn/ver/11/trunk/cpp/INIReader.h
+END

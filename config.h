@@ -19,8 +19,13 @@ class Config {
         bool directory_exists(const char *directory);
         void build_dir(const char *directory);
         void clear_cache();
+        void read_config_file();
 
     public:
+        std::string user_nick;
+        std::string user_username;
+        std::string user_realname;
+
         // Constructor.
         Config();
 

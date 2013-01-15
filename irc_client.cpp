@@ -160,6 +160,10 @@ void *IRC_Client::handle_recv(void) {
     	exit(EXIT_FAILURE);
     }
     
+    system("stty cooked");
+    repl.clear();
+    exit(EXIT_SUCCESS);
+    
     return NULL;
 }
 

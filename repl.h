@@ -28,7 +28,7 @@ class REPL {
 
         // Constructor.
         REPL();
-        //~REPL();
+        ~REPL();
 
         void clear();
         void rewrite();

@@ -21,6 +21,13 @@ REPL::REPL() {
     history_current_position = 0;
 }
 
+REPL::~REPL() {
+    clear();
+    Conio::initTermios(1);
+    Conio::resetTermios();
+    system("stty echo cooked");
+}
+
 void REPL::add_history() {
     if (history.size() >= 100) {
         history.erase(history.begin());

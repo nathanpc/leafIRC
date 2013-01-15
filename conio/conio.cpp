@@ -9,7 +9,7 @@ using namespace std;
 static struct termios old, _new;
 
 /* Initialize _new terminal i/o settings */
-void initTermios(int echo) {
+void Conio::initTermios(int echo) {
   tcgetattr(0, &old); /* grab old terminal i/o settings */
   _new = old; /* make _new settings same as old settings */
   _new.c_lflag &= ~ICANON; /* disable buffered i/o */
@@ -18,12 +18,12 @@ void initTermios(int echo) {
 }
 
 /* Restore old terminal i/o settings */
-void resetTermios() {
+void Conio::resetTermios() {
   tcsetattr(0, TCSANOW, &old);
 }
 
 /* Read 1 character - echo defines echo mode */
-char getch_(int echo) {
+char Conio::getch_(int echo) {
   char ch;
   initTermios(echo);
   ch = getchar();

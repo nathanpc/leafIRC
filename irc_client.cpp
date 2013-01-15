@@ -22,11 +22,13 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <pthread.h>
+#include <ctime>
 
 #include "irc_client.h"
 #include "message.h"
 #include "channels.h"
 #include "color.h"
+#include "irc_reply_codes.h"
 
 #define MAXDATASIZE 256
 using namespace std;
@@ -48,8 +50,7 @@ bool IRC_Client::send_data(string data) {
     int len = strlen(buffer);
     int bytes_sent;
     
-    if((bytes_sent = send(sd, buffer, len, 0)) == -1)
-    {
+    if ((bytes_sent = send(sd, buffer, len, 0)) == -1) {
     	perror("IRC_Client::send_data(): send");
     	exit(EXIT_FAILURE);
     }
@@ -59,8 +60,7 @@ bool IRC_Client::send_data(string data) {
 
 void IRC_Client::message_handler(const char *buffer) {
 	// Check if the buffer is empty
-	if(strlen(buffer) == 0)
-	{
+	if (strlen(buffer) == 0) {
 		cerr << "Error: \"buffer is empty\"\n";
 		exit(0);
 	}
@@ -69,7 +69,7 @@ void IRC_Client::message_handler(const char *buffer) {
     string str_buffer(buffer);
 
     if (message.get_command() == "PING") {
-    	// TODO:  There is an assumption here that message.get_command_args() is not empty
+    	// There is an assumption here that message.get_command_args() is not empty
         IRC_Client::send_data("PONG " + message.get_command_args().at(0) + "\r\n");
     } else {
         // Messages that need to be echoed.
@@ -83,41 +83,70 @@ void IRC_Client::message_handler(const char *buffer) {
                     echo = false;
                 }
 
-                str_buffer = string(BOLDWHITE) + "<" + message.get_username() + "> " + string(RESET) + arguments.at(1) + "\r\n";
+                // TODO: Generate a color for each nick based on its letters.
+                str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
                 channels.cache(arguments.at(0).substr(1), str_buffer);
             }
-        } /*else if (message.get_reply_code()) {
-            // TODO: Fix this. Shitty MOTD is fucking this up.
-            unsigned int reply_code = message.get_reply_code();
-            if (reply_code != 372) {
-                str_buffer = string(YELLOW) + "<server> " + string(RESET) + arguments.at(2) + "\r\n";
+        } else if (message.get_command() == "JOIN") {
+            if (!arguments.empty()) {
+            	channels.add(arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
             }
-        }*/ else if (message.get_command() == "JOIN") {
-            if(!arguments.empty())
-            {
-            	channels.add(
-            		arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
+        } else {
+            // Might be a server message, so let's check for the reply code.
+            int reply_code = message.get_reply_code();
+
+            switch (reply_code) {
+                case RPL_TOPICWHOTIME:
+                    str_buffer = "Topic set by " +  arguments.at(2).substr(0,  arguments.at(2).find('!')) + "\r\n";
+                    break;
+                case RPL_TOPIC:
+                    str_buffer = string(BOLDWHITE) + "Topic: " + "\"" + arguments.at(2) + "\"" + string(RESET) + "\r\n";
+                    break;
+                case RPL_NAMREPLY:
+                    //[01:48:50] :irc.arcti.ca 353 leafirc = #leafirc :leafirc nathanpc @vivid_
+                    //[01:48:50] :irc.arcti.ca 366 leafirc #leafirc :End of /NAMES list.
+                    break;
+                case RPL_ENDOFNAMES:
+                    // Ignored
+                    str_buffer = "";
+                    break;
+                default:
+                    str_buffer = "";
+
+                    for (size_t i = 1; i < arguments.size(); i++) {
+                        str_buffer += arguments.at(i) + " ";
+                    }
+
+                    str_buffer += "\r\n";
+                    break;
             }
         }
 		
-        if (echo)
-        {
-            if (!repl.has_started)
-            {
-#ifdef DEBUG
-				cout << "\n" << message << "\n";
-#else
-                cout << str_buffer;
-#endif
-            }
-            else
-            {
+        if (echo) {
+            time_t rawtime;
+            struct tm *timeinfo;
+            char time_str[12];
+
+            // Create a timestamp for the message.
+            time(&rawtime);
+            timeinfo = localtime(&rawtime);
+            strftime(time_str, 12, "[%H:%M:%S] ", timeinfo);
+
+            if (!repl.has_started) {
+                #ifdef DEBUG
+				    cout << "\n" << message << "\n";
+                #else
+                    cout << time_str << str_buffer;
+                #endif
+            } else {
 				repl.clear();
-#ifdef DEBUG
-				cout << message << "\n";
-#else
-                cout << "\r" << str_buffer;
-#endif
+                #ifdef DEBUG
+				    cout << message << "\n";
+                #else
+                    if (str_buffer != "") {
+                        cout << "\r" << time_str << str_buffer;
+                    }
+                #endif
 				repl.rewrite();
             }
         }
@@ -131,8 +160,7 @@ void *IRC_Client::handle_recv(void) {
     static string sbuf;
     size_t pos;
 
-    while((numbytes = recv(sd, buffer, MAXDATASIZE - 1, 0)) > 0)
-    {
+    while ((numbytes = recv(sd, buffer, MAXDATASIZE - 1, 0)) > 0) {
        	// NULL-terminate the buffer
        	buffer[numbytes] = '\0';
        	
@@ -140,8 +168,7 @@ void *IRC_Client::handle_recv(void) {
        	sbuf += buffer;
         
         // Search for the CR (\r) character followed by the LF (\n) character,
-        while((pos = sbuf.find("\r\n")) != string::npos)
-        {
+        while ((pos = sbuf.find("\r\n")) != string::npos) {
         	// Copy the whole message, including the CRLF at the end
         	string msg = sbuf.substr(0, pos + 2);
         	
@@ -154,15 +181,13 @@ void *IRC_Client::handle_recv(void) {
     }
     
     // Connection closed or there was an error
-    if(numbytes == -1)
-    {
+    if (numbytes == -1) {
     	perror("IRC_Client::handle_recv");
     	exit(EXIT_FAILURE);
     }
-    
-    system("stty cooked");
-    repl.clear();
-    exit(EXIT_SUCCESS);
+
+    repl.~REPL();
+    exit(0);
     
     return NULL;
 }
@@ -175,8 +200,7 @@ void IRC_Client::start_connection() {
     hints.ai_socktype = SOCK_STREAM;
 
     int res;
-    if ((res = getaddrinfo(server.c_str(), port.c_str(), &hints, &servinfo)) != 0)
-    {
+    if ((res = getaddrinfo(server.c_str(), port.c_str(), &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
     }
 
@@ -186,8 +210,7 @@ void IRC_Client::start_connection() {
     }
 
     // Connect!
-    if (connect(sd, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
-    {
+    if (connect(sd, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
         close(sd);
         perror("Couldn't connect");
     }

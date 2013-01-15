@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 28
+/svn/!svn/ver/27/trunk/tests
+END
+multi_line.ini
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/16/trunk/tests/multi_line.ini
+END
+unittest.c
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/21/trunk/tests/unittest.c
+END
+baseline_single.txt
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/27/trunk/tests/baseline_single.txt
+END
+unittest.bat
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/16/trunk/tests/unittest.bat
+END
+user_error.ini
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/14/trunk/tests/user_error.ini
+END
+normal.ini
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/14/trunk/tests/normal.ini
+END
+bad_comment.ini
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/14/trunk/tests/bad_comment.ini
+END
+bad_section.ini
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/14/trunk/tests/bad_section.ini
+END
+baseline_multi.txt
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/27/trunk/tests/baseline_multi.txt
+END
+bom.ini
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/!svn/ver/27/trunk/tests/bom.ini
+END
+bad_multi.ini
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/14/trunk/tests/bad_multi.ini
+END

@@ -1,6 +1,6 @@
 CXX = clang++
 CXXFLAGS = -Wall -pthread
-OBJ = leaf.o splash.o irc_client.o message.o config.o channels.o conio/conio.o repl.o
+OBJ = leaf.o splash.o irc_client.o message.o config.o inih/ini.o inih/cpp/INIReader.o channels.o conio/conio.o repl.o
 
 all: leaf
 

@@ -52,7 +52,8 @@ ostream& operator<<(ostream& out, const Message& m)
 {
 #ifdef DEBUG
 	out << "\nraw = " << changeNewlines(m._raw) << "\n";
-	out << "server = \"" << changeNewlines(m.server) << "\"\tusername = \""
+	out << "server = \"" << changeNewlines(m.server) << "\"\tnickname = \""
+		<< changeNewlines(m.nickname) << "\"\tusername = \""
 		<< changeNewlines(m.username) << "\"\thostname = \""
 		<< changeNewlines(m.hostname) << "\"\tcommand = \""
 		<< changeNewlines(m.cmd) << "\"\narguments: ";
@@ -86,6 +87,7 @@ bool Message::parse()
 	// Check when parsing for the server, if the message begins with NOTICE
 	if(parse_server())
 	{
+        parse_nickname();
 		parse_username();
 		parse_hostname();
 	}
@@ -135,8 +137,28 @@ bool Message::parse_server()
 	}
 	
 	server = raw.substr(0, pos);
-	raw.erase(0, pos + 1);
+    if (server.find('.') != string::npos) {
+    	raw.erase(0, pos + 1);
+    } else {
+        server = "";
+    }
+
 	return ans;
+}
+
+string Message::parse_nickname() {
+	size_t pos;
+	
+	// Look for the at symbol, if not found return an empty string
+	if ((pos = raw.find('!')) == string::npos) {
+		return string();
+	}
+	
+	// Save the nickname and remove it and the at symbol from the raw string
+	nickname = raw.substr(0, pos);
+	raw.erase(0, ++pos);
+	
+	return nickname;
 }
 
 string Message::parse_username()
@@ -238,6 +260,10 @@ unsigned int Message::get_reply_code()
 string Message::get_server()
 {
 	return server;
+}
+
+string Message::get_nickname() {
+	return nickname;
 }
 
 string Message::get_username()

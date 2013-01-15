@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <pthread.h>
+#include <ctime>
 
 #include "irc_client.h"
 #include "message.h"
@@ -83,16 +84,10 @@ void IRC_Client::message_handler(const char *buffer) {
                     echo = false;
                 }
 
-                str_buffer = string(BOLDWHITE) + "<" + message.get_username() + "> " + string(RESET) + arguments.at(1) + "\r\n";
+                str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
                 channels.cache(arguments.at(0).substr(1), str_buffer);
             }
-        } /*else if (message.get_reply_code()) {
-            // TODO: Fix this. Shitty MOTD is fucking this up.
-            unsigned int reply_code = message.get_reply_code();
-            if (reply_code != 372) {
-                str_buffer = string(YELLOW) + "<server> " + string(RESET) + arguments.at(2) + "\r\n";
-            }
-        }*/ else if (message.get_command() == "JOIN") {
+        } else if (message.get_command() == "JOIN") {
             if(!arguments.empty())
             {
             	channels.add(
@@ -102,12 +97,20 @@ void IRC_Client::message_handler(const char *buffer) {
 		
         if (echo)
         {
+            time_t rawtime;
+            struct tm *timeinfo;
+            char time_str[12];
+
+            time(&rawtime);
+            timeinfo = localtime(&rawtime);
+            strftime(time_str, 12, "[%H:%M:%S] ", timeinfo);
+
             if (!repl.has_started)
             {
 #ifdef DEBUG
 				cout << "\n" << message << "\n";
 #else
-                cout << str_buffer;
+                cout << time_str << str_buffer;
 #endif
             }
             else
@@ -116,7 +119,7 @@ void IRC_Client::message_handler(const char *buffer) {
 #ifdef DEBUG
 				cout << message << "\n";
 #else
-                cout << "\r" << str_buffer;
+                cout << "\r" << time_str << str_buffer;
 #endif
 				repl.rewrite();
             }

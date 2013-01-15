@@ -49,8 +49,7 @@ bool IRC_Client::send_data(string data) {
     int len = strlen(buffer);
     int bytes_sent;
     
-    if((bytes_sent = send(sd, buffer, len, 0)) == -1)
-    {
+    if ((bytes_sent = send(sd, buffer, len, 0)) == -1) {
     	perror("IRC_Client::send_data(): send");
     	exit(EXIT_FAILURE);
     }
@@ -60,8 +59,7 @@ bool IRC_Client::send_data(string data) {
 
 void IRC_Client::message_handler(const char *buffer) {
 	// Check if the buffer is empty
-	if(strlen(buffer) == 0)
-	{
+	if (strlen(buffer) == 0) {
 		cerr << "Error: \"buffer is empty\"\n";
 		exit(0);
 	}
@@ -88,39 +86,35 @@ void IRC_Client::message_handler(const char *buffer) {
                 channels.cache(arguments.at(0).substr(1), str_buffer);
             }
         } else if (message.get_command() == "JOIN") {
-            if(!arguments.empty())
-            {
+            if (!arguments.empty()) {
             	channels.add(
             		arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
             }
         }
 		
-        if (echo)
-        {
+        if (echo) {
             time_t rawtime;
             struct tm *timeinfo;
             char time_str[12];
 
+            // Create a timestamp for the message.
             time(&rawtime);
             timeinfo = localtime(&rawtime);
             strftime(time_str, 12, "[%H:%M:%S] ", timeinfo);
 
-            if (!repl.has_started)
-            {
-#ifdef DEBUG
-				cout << "\n" << message << "\n";
-#else
-                cout << time_str << str_buffer;
-#endif
-            }
-            else
-            {
+            if (!repl.has_started) {
+                #ifdef DEBUG
+				    cout << "\n" << message << "\n";
+                #else
+                    cout << time_str << str_buffer;
+                #endif
+            } else {
 				repl.clear();
-#ifdef DEBUG
-				cout << message << "\n";
-#else
-                cout << "\r" << time_str << str_buffer;
-#endif
+                #ifdef DEBUG
+				    cout << message << "\n";
+                #else
+                    cout << "\r" << time_str << str_buffer;
+                #endif
 				repl.rewrite();
             }
         }
@@ -134,8 +128,7 @@ void *IRC_Client::handle_recv(void) {
     static string sbuf;
     size_t pos;
 
-    while((numbytes = recv(sd, buffer, MAXDATASIZE - 1, 0)) > 0)
-    {
+    while ((numbytes = recv(sd, buffer, MAXDATASIZE - 1, 0)) > 0) {
        	// NULL-terminate the buffer
        	buffer[numbytes] = '\0';
        	
@@ -143,8 +136,7 @@ void *IRC_Client::handle_recv(void) {
        	sbuf += buffer;
         
         // Search for the CR (\r) character followed by the LF (\n) character,
-        while((pos = sbuf.find("\r\n")) != string::npos)
-        {
+        while ((pos = sbuf.find("\r\n")) != string::npos) {
         	// Copy the whole message, including the CRLF at the end
         	string msg = sbuf.substr(0, pos + 2);
         	
@@ -157,8 +149,7 @@ void *IRC_Client::handle_recv(void) {
     }
     
     // Connection closed or there was an error
-    if(numbytes == -1)
-    {
+    if (numbytes == -1) {
     	perror("IRC_Client::handle_recv");
     	exit(EXIT_FAILURE);
     }
@@ -174,8 +165,7 @@ void IRC_Client::start_connection() {
     hints.ai_socktype = SOCK_STREAM;
 
     int res;
-    if ((res = getaddrinfo(server.c_str(), port.c_str(), &hints, &servinfo)) != 0)
-    {
+    if ((res = getaddrinfo(server.c_str(), port.c_str(), &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
     }
 
@@ -185,8 +175,7 @@ void IRC_Client::start_connection() {
     }
 
     // Connect!
-    if (connect(sd, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
-    {
+    if (connect(sd, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
         close(sd);
         perror("Couldn't connect");
     }

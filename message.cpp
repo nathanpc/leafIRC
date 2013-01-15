@@ -14,10 +14,8 @@
 #include "message.h"
 using namespace std;
 
-Message::Message(const char* s)
-{
-	if((raw = _raw = strip_end_newline(s)).empty())
-	{
+Message::Message(const char* s) {
+	if ((raw = _raw = strip_end_newline(s)).empty()) {
 		cerr << "Message::Message() \"message is empty\"\n";
 		exit(0);
 	}
@@ -25,10 +23,8 @@ Message::Message(const char* s)
 	parse();
 }
 
-static string changeNewlines(const string& s)
-{
-	if(s.empty())
-	{
+static string changeNewlines(const string& s) {
+	if (s.empty()) {
 		return s;
 	}
 	
@@ -36,10 +32,8 @@ static string changeNewlines(const string& s)
 	size_t i, sz;
 	
 	// Loop through the given string, changing any \r or \n
-	for(i = 0, sz = retval.size(); i < sz - 1; ++i)
-	{
-		if(retval[i] == '\r' && i + 1 < sz && retval[i + 1] == '\n')
-		{
+	for (i = 0, sz = retval.size(); i < sz - 1; ++i) {
+		if (retval[i] == '\r' && i + 1 < sz && retval[i + 1] == '\n') {
 			retval[i] = '\\';
 			retval[i + 1] = 'n';
 		}
@@ -48,33 +42,27 @@ static string changeNewlines(const string& s)
 	return retval;
 }
 
-ostream& operator<<(ostream& out, const Message& m)
-{
-#ifdef DEBUG
-	out << "\nraw = " << changeNewlines(m._raw) << "\n";
-	out << "server = \"" << changeNewlines(m.server) << "\"\tnickname = \""
-		<< changeNewlines(m.nickname) << "\"\tusername = \""
-		<< changeNewlines(m.username) << "\"\thostname = \""
-		<< changeNewlines(m.hostname) << "\"\tcommand = \""
-		<< changeNewlines(m.cmd) << "\"\narguments: ";
-#endif
+ostream& operator<<(ostream& out, const Message& m) {
+    #ifdef DEBUG
+	    out << "\nraw = " << changeNewlines(m._raw) << "\n";
+	    out << "server = \"" << changeNewlines(m.server) << "\"\tnickname = \""
+		    << changeNewlines(m.nickname) << "\"\tusername = \""
+		    << changeNewlines(m.username) << "\"\thostname = \""
+    		<< changeNewlines(m.hostname) << "\"\tcommand = \""
+	    	<< changeNewlines(m.cmd) << "\"\narguments: ";
+    #endif
 		
-	if(m.args.empty())
-	{
+	if (m.args.empty()) {
 		out << "none\n";
-	}
-	else
-	{
+	} else {
 		size_t i, sz;
 		
-		for(i = 0, sz = m.args.size(); i < sz - 1; ++i)
-		{
+		for (i = 0, sz = m.args.size(); i < sz - 1; ++i) {
 			out << "\"" << changeNewlines(m.args[i]) << "\", ";
 		}
 		
 		// 'i' should be less than 'sz' but check anyways
-		if(i < sz)
-		{
+		if (i < sz) {
 			out << "\"" << changeNewlines(m.args[i]) << "\"\n";
 		}
 	}
@@ -82,11 +70,9 @@ ostream& operator<<(ostream& out, const Message& m)
 	return out;
 }
 
-bool Message::parse()
-{
+bool Message::parse() {
 	// Check when parsing for the server, if the message begins with NOTICE
-	if(parse_server())
-	{
+	if (parse_server()) {
         parse_nickname();
 		parse_username();
 		parse_hostname();
@@ -98,16 +84,12 @@ bool Message::parse()
 	return true;
 }
 
-bool Message::parse_server()
-{
+bool Message::parse_server() {
 	// Validate the raw string before we start parsing.
 	// It must not be empty and the first char should be a colon ':'
-	if(raw.empty() || raw[0] != ':')
-	{
+	if (raw.empty() || raw[0] != ':') {
 		return false;
-	}
-	else if(raw[0] == ':')
-	{
+	} else if(raw[0] == ':') {
 		raw.erase(0, 1);
 	}
 	
@@ -115,23 +97,18 @@ bool Message::parse_server()
 	bool ans = false;
 	
 	// Look for the first of either an exclamation mark or a space
-	for(pos = 0; pos < raw.size(); ++pos)
-	{
-		if(raw[pos] == '!')
-		{
+	for (pos = 0; pos < raw.size(); ++pos) {
+		if (raw[pos] == '!') {
 			ans = true;
 			break;
-		}
-		else if(raw[pos] == ' ')
-		{
+		} else if(raw[pos] == ' ') {
 			ans = false;
 			break;
 		}
 	}
 	
 	// Check if neither a ! or a space were found
-	if(pos >= raw.size())
-	{
+	if (pos >= raw.size()) {
 		cerr << "Error: \"invalid IRC message\"\n";
 		exit(EXIT_FAILURE);
 	}
@@ -161,13 +138,11 @@ string Message::parse_nickname() {
 	return nickname;
 }
 
-string Message::parse_username()
-{
+string Message::parse_username() {
 	size_t pos;
 	
 	// Look for the at symbol, if not found return an empty string
-	if((pos = raw.find('@')) == string::npos)
-	{
+	if ((pos = raw.find('@')) == string::npos) {
 		return string();
 	}
 	
@@ -178,13 +153,11 @@ string Message::parse_username()
 	return username;
 }
 
-string Message::parse_hostname()
-{
+string Message::parse_hostname() {
 	size_t pos;
 	
 	// Get the index for the first space character and check if it is not found
-	if((pos = raw.find(' ')) == string::npos)
-	{
+	if ((pos = raw.find(' ')) == string::npos) {
 		return string();
 	}
 	
@@ -195,8 +168,7 @@ string Message::parse_hostname()
 	return hostname;
 }
 
-string Message::parse_command()
-{
+string Message::parse_command() {
 	size_t pos = raw.find(' ');
 	
 	cmd = raw.substr(0, pos);
@@ -207,19 +179,15 @@ string Message::parse_command()
 	return cmd;
 }
 
-string Message::parse_arguments()
-{
+string Message::parse_arguments() {
 	// Check if we've already parsed the arguments
-    if(!raw.empty())
-    {
+    if (!raw.empty()) {
 		// Parse the argument(s) from the msg string
-		while(!raw.empty())
-		{
+		while (!raw.empty()) {
 		    size_t current_pos;
 		    
 		    // First check if this is the last "colon" argument
-		    if(raw[0] == ':')
-		    {
+		    if (raw[0] == ':') {
 		    	// Push the last argument onto vector and erase the raw string
 		    	args.push_back(raw.substr(1));
 		    	raw.clear();
@@ -240,13 +208,11 @@ string Message::parse_arguments()
 	return args.back();
 }
 
-string Message::strip_end_newline(string line)
-{
+string Message::strip_end_newline(string line) {
     return line.erase(line.find("\r\n"), 2);
 }
 
-unsigned int Message::get_reply_code()
-{
+unsigned int Message::get_reply_code() {
     string reply_code_str = raw.substr(raw.find(" "), 4);
     unsigned int reply_code = 0;
 
@@ -257,8 +223,7 @@ unsigned int Message::get_reply_code()
     return 0;
 }
 
-string Message::get_server()
-{
+string Message::get_server() {
 	return server;
 }
 
@@ -266,22 +231,18 @@ string Message::get_nickname() {
 	return nickname;
 }
 
-string Message::get_username()
-{
+string Message::get_username() {
 	return username;
 }
 
-string Message::get_hostname()
-{
+string Message::get_hostname() {
 	return hostname;
 }
 
-string Message::get_command()
-{
+string Message::get_command() {
     return cmd;
 }
 
-vector<string> Message::get_command_args()
-{
+vector<string> Message::get_command_args() {
 	return args;
 }

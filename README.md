@@ -23,3 +23,10 @@ These are the awesome developers behind this project:
 
   * [Nathan Campos](http://about.me/nathanpc)
   * [Chris Myers](vividexstance@hotmail.com)
+
+
+## Some Links
+
+Some interesting links for leafIRC users.
+
+  * [Ohloh](https://www.ohloh.net/p/leafIRC)

@@ -28,6 +28,7 @@
 #include "message.h"
 #include "channels.h"
 #include "color.h"
+#include "irc_reply_codes.h"
 
 #define MAXDATASIZE 256
 using namespace std;
@@ -68,7 +69,7 @@ void IRC_Client::message_handler(const char *buffer) {
     string str_buffer(buffer);
 
     if (message.get_command() == "PING") {
-    	// TODO:  There is an assumption here that message.get_command_args() is not empty
+    	// There is an assumption here that message.get_command_args() is not empty
         IRC_Client::send_data("PONG " + message.get_command_args().at(0) + "\r\n");
     } else {
         // Messages that need to be echoed.
@@ -82,13 +83,42 @@ void IRC_Client::message_handler(const char *buffer) {
                     echo = false;
                 }
 
+                // TODO: Generate a color for each nick based on its letters.
                 str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
                 channels.cache(arguments.at(0).substr(1), str_buffer);
             }
         } else if (message.get_command() == "JOIN") {
             if (!arguments.empty()) {
-            	channels.add(
-            		arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
+            	channels.add(arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
+            }
+        } else {
+            // Might be a server message, so let's check for the reply code.
+            int reply_code = message.get_reply_code();
+
+            switch (reply_code) {
+                case RPL_TOPICWHOTIME:
+                    str_buffer = "Topic set by " +  arguments.at(2).substr(0,  arguments.at(2).find('!')) + "\r\n";
+                    break;
+                case RPL_TOPIC:
+                    str_buffer = string(BOLDWHITE) + "Topic: " + "\"" + arguments.at(2) + "\"" + string(RESET) + "\r\n";
+                    break;
+                case RPL_NAMREPLY:
+                    //[01:48:50] :irc.arcti.ca 353 leafirc = #leafirc :leafirc nathanpc @vivid_
+                    //[01:48:50] :irc.arcti.ca 366 leafirc #leafirc :End of /NAMES list.
+                    break;
+                case RPL_ENDOFNAMES:
+                    // Ignored
+                    str_buffer = "";
+                    break;
+                default:
+                    str_buffer = "";
+
+                    for (size_t i = 1; i < arguments.size(); i++) {
+                        str_buffer += arguments.at(i) + " ";
+                    }
+
+                    str_buffer += "\r\n";
+                    break;
             }
         }
 		
@@ -113,7 +143,9 @@ void IRC_Client::message_handler(const char *buffer) {
                 #ifdef DEBUG
 				    cout << message << "\n";
                 #else
-                    cout << "\r" << time_str << str_buffer;
+                    if (str_buffer != "") {
+                        cout << "\r" << time_str << str_buffer;
+                    }
                 #endif
 				repl.rewrite();
             }
@@ -153,7 +185,9 @@ void *IRC_Client::handle_recv(void) {
     	perror("IRC_Client::handle_recv");
     	exit(EXIT_FAILURE);
     }
-    
+
+    repl.~REPL();
+    exit(0);
     return NULL;
 }
 

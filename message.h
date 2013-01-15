@@ -38,8 +38,6 @@ class Message {
         
         // Output operator for output streams
         friend std::ostream& operator<<(std::ostream& out, const Message& m);
-
-        unsigned int get_reply_code();
         
         std::string get_server();
         std::string get_nickname();
@@ -47,6 +45,7 @@ class Message {
         std::string get_hostname();
         std::string get_command();
         std::vector<std::string> get_command_args();
+        int get_reply_code();
 };
 
 #endif

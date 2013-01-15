@@ -212,17 +212,6 @@ string Message::strip_end_newline(string line) {
     return line.erase(line.find("\r\n"), 2);
 }
 
-unsigned int Message::get_reply_code() {
-    string reply_code_str = raw.substr(raw.find(" "), 4);
-    unsigned int reply_code = 0;
-
-    if (stringstream(reply_code_str) >> reply_code) {
-        return reply_code;
-    }
-
-    return 0;
-}
-
 string Message::get_server() {
 	return server;
 }
@@ -245,4 +234,8 @@ string Message::get_command() {
 
 vector<string> Message::get_command_args() {
 	return args;
+}
+
+int Message::get_reply_code() {
+    return atoi(cmd.c_str());
 }

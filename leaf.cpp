@@ -8,7 +8,6 @@
 
 #include <iostream>
 #include <string>
-#include <curses.h>
 
 #include "irc_client.h"
 #include "splash.h"

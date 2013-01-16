@@ -21,7 +21,6 @@ Pretty_Print_Message::Pretty_Print_Message(const char *_buffer) {
 string Pretty_Print_Message::generate(Message &message, Channels &channels) {
     string str_buffer(buffer);
     vector<string> arguments = message.get_command_args();
-    // TODO: Add ACTION to the list of special parsing messages.
 
     if (message.get_command() == "PRIVMSG") {
         if (arguments.at(0).at(0) == '#') {
@@ -31,7 +30,15 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
             }
 
             // TODO: Generate a color for each nick based on its letters.
+            // A normal message.
             str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
+
+            if (arguments.at(1).size() > 6) {
+                if (arguments.at(1).substr(0, 7) == "\001ACTION") {
+                    // This is a ACTION message.
+                    str_buffer = string(BOLDMAGENTA) + "\u2022 " + message.get_nickname() + " " + arguments.at(1).substr(8) + string(RESET) + "\r\n";
+                }
+            }
         }
     } else if (message.get_command() == "JOIN") {
         // Someone joined the channel.

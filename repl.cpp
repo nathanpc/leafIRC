@@ -62,7 +62,8 @@ void REPL::read() {
 
     //printf("%d\n", curr_char = Conio::getche());
     curr_char = Conio::getch();
-    
+
+    // TODO: Implement nick auto-completion when the user hits tab.
     if (curr_char == 3) {
         // Control + C
         exit(0);

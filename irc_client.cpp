@@ -27,8 +27,8 @@
 #include "irc_client.h"
 #include "message.h"
 #include "channels.h"
+#include "pretty_print_msg.h"
 #include "color.h"
-#include "irc_reply_codes.h"
 
 #define MAXDATASIZE 256
 using namespace std;
@@ -62,67 +62,20 @@ void IRC_Client::message_handler(const char *buffer) {
 	// Check if the buffer is empty
 	if (strlen(buffer) == 0) {
 		cerr << "Error: \"buffer is empty\"\n";
-		exit(0);
+		exit(1);
 	}
 	
     Message message(buffer);
-    string str_buffer(buffer);
 
     if (message.get_command() == "PING") {
     	// There is an assumption here that message.get_command_args() is not empty
         IRC_Client::send_data("PONG " + message.get_command_args().at(0) + "\r\n");
     } else {
         // Messages that need to be echoed.
-        vector<string> arguments = message.get_command_args();
-        bool echo = true;
-
-        if (message.get_command() == "PRIVMSG") {
-            if (arguments.at(0).at(0) == '#') {
-                // Channel message.
-                if (arguments.at(0) != "#" + channels.list.at(channels.current)) {
-                    echo = false;
-                }
-
-                // TODO: Generate a color for each nick based on its letters.
-                str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
-                channels.cache(arguments.at(0).substr(1), str_buffer);
-            }
-        } else if (message.get_command() == "JOIN") {
-            if (!arguments.empty()) {
-            	channels.add(arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
-            }
-        } else {
-            // Might be a server message, so let's check for the reply code.
-            int reply_code = message.get_reply_code();
-
-            switch (reply_code) {
-                case RPL_TOPICWHOTIME:
-                    str_buffer = "Topic set by " +  arguments.at(2).substr(0,  arguments.at(2).find('!')) + "\r\n";
-                    break;
-                case RPL_TOPIC:
-                    str_buffer = string(BOLDWHITE) + "Topic: " + "\"" + arguments.at(2) + "\"" + string(RESET) + "\r\n";
-                    break;
-                case RPL_NAMREPLY:
-                    //[01:48:50] :irc.arcti.ca 353 leafirc = #leafirc :leafirc nathanpc @vivid_
-                    //[01:48:50] :irc.arcti.ca 366 leafirc #leafirc :End of /NAMES list.
-                    break;
-                case RPL_ENDOFNAMES:
-                    // Ignored
-                    str_buffer = "";
-                    break;
-                default:
-                    str_buffer = "";
-
-                    for (size_t i = 1; i < arguments.size(); i++) {
-                        str_buffer += arguments.at(i) + " ";
-                    }
-
-                    str_buffer += "\r\n";
-                    break;
-            }
-        }
+        Pretty_Print_Message pretty_print(buffer);
+        string str_buffer = pretty_print.generate(message, channels);
 		
-        if (echo) {
+        if (pretty_print.echo) {
             time_t rawtime;
             struct tm *timeinfo;
             char time_str[12];
@@ -136,7 +89,10 @@ void IRC_Client::message_handler(const char *buffer) {
                 #ifdef DEBUG
 				    cout << "\n" << message << "\n";
                 #else
-                    cout << time_str << str_buffer;
+                    if (str_buffer != "") {
+                        str_buffer = time_str + str_buffer;
+                        cout << str_buffer;
+                    }
                 #endif
             } else {
 				repl.clear();
@@ -144,7 +100,8 @@ void IRC_Client::message_handler(const char *buffer) {
 				    cout << message << "\n";
                 #else
                     if (str_buffer != "") {
-                        cout << "\r" << time_str << str_buffer;
+                        str_buffer = time_str + str_buffer;
+                        cout << "\r" << str_buffer;
                     }
                 #endif
 				repl.rewrite();

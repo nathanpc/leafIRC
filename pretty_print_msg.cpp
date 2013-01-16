@@ -34,6 +34,7 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
             str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
         }
     } else if (message.get_command() == "JOIN") {
+        // Someone joined the channel.
         // TODO: Check if this isn't adding more than one time when another user joins the channel.
         // If it is move this to the repl loop and create an eval return for it.
         if (!arguments.empty()) {
@@ -42,39 +43,50 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
 
         str_buffer = string(BOLDGREEN) + "> " + string(RESET) + message.get_nickname() + " joined " + arguments.at(0) + "\r\n";
     } else if (message.get_command() == "PART") {
+        // Someone left the channel.
         str_buffer = string(BOLDRED) + "< " + string(RESET) + message.get_nickname() + " left\r\n";
     } else if (message.get_command() == "KICK") {
+        // Someone got kicked.
         str_buffer = string(BOLDRED) + "<< " + message.get_nickname() + " got kicked from " + arguments.at(0) + " (" + arguments.at(2) + ")" + string(RESET) + "\r\n";
     } else if (message.get_command() == "MODE") {
+        // Changing modes.
         str_buffer = string(BOLDBLUE) + "* " + string(RESET) + message.get_nickname() + " set mode ";
+
         for (unsigned int i = 0; i < arguments.size(); i++) {
             str_buffer += arguments.at(i) + " ";
         }
+
         str_buffer += "\r\n";
     } else if (message.get_command() == "QUIT") {
+        // Quitting.
         str_buffer = string(BOLDRED) + "<< " + string(RESET) + message.get_nickname() + " quit (" + arguments.at(0) + ")\r\n";
     } else if (message.get_command() == "ERROR") {
+        // Oh noes! Error!
         str_buffer = string(BOLDRED) + "Error: " + arguments.at(0) + string(RESET) + "\r\n";
     } else {
         // Might be a server message, so let's check for the reply code.
         int reply_code = message.get_reply_code();
 
         switch (reply_code) {
-            case RPL_TOPICWHOTIME:
-                str_buffer = "Topic set by " +  arguments.at(2).substr(0,  arguments.at(2).find('!')) + "\r\n";
-                break;
             case RPL_TOPIC:
+                // Got a topic.
                 str_buffer = string(BOLDWHITE) + "Topic: " + "\"" + arguments.at(2) + "\"" + string(RESET) + "\r\n";
                 break;
+            case RPL_TOPICWHOTIME:
+                // Got who set the topic.
+                str_buffer = "Topic set by " +  arguments.at(2).substr(0,  arguments.at(2).find('!')) + "\r\n";
+                break;
             case RPL_NAMREPLY:
+                // Got a list of the people online.
                 //[01:48:50] :irc.arcti.ca 353 leafirc = #leafirc :leafirc nathanpc @vivid_
                 //[01:48:50] :irc.arcti.ca 366 leafirc #leafirc :End of /NAMES list.
                 break;
             case RPL_ENDOFNAMES:
-                // Ignored
+                // (Ignored) Got the end of the online names list
                 str_buffer = "";
                 break;
             default:
+                // Got some other kind of message that we haven't covered.
                 str_buffer = "";
 
                 for (size_t i = 1; i < arguments.size(); i++) {

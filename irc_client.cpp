@@ -177,20 +177,24 @@ void IRC_Client::start_connection() {
     bool just_connected = true;
     while (true) {
         if (just_connected) {
+            // Send the first authentication messages to the server.
             send_data("NICK " + nick + "\r\n");
-            send_data("USER " + username + " 0 * :" + realname + "\r\n");  // TODO: Set user mode.
+            send_data("USER " + username + " 0 * :" + realname + "\r\n");
 
             just_connected = false;
         }
 
+        // Read the user input.
         repl.read();
 
+        // Check if the user input is ready to be processed.
         if (repl.string_is_ready) {
             if (!repl.external_command.empty()) {
                 // Command.
                 string command = repl.external_command.at(0);
 
                 if (command == "switch") {
+                    // Switching channels.
                     channels.current = channels.find_index(repl.external_command.at(1));
 
                     repl.clear();
@@ -198,7 +202,9 @@ void IRC_Client::start_connection() {
                     cout << channels.load_cache(repl.external_command.at(1));
                     repl.current_str = "";
                 } else if (command == "message") {
+                    // Just a normal message that needs to be sent to the current channel.
                     if (channels.current != -1) {
+                        // Include the command to the message.
                         string send_msg = "PRIVMSG #" + channels.list.at(channels.current) + " :" + repl.current_str;
 
                         // TODO: Get nick.

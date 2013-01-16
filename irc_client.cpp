@@ -88,9 +88,27 @@ void IRC_Client::message_handler(const char *buffer) {
                 channels.cache(arguments.at(0).substr(1), str_buffer);
             }
         } else if (message.get_command() == "JOIN") {
+            // TODO: Check if this isn't adding more than one time when another user joins the channel.
+            // If it is move this to the repl loop and create an eval return for it.
             if (!arguments.empty()) {
             	channels.add(arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
             }
+
+            str_buffer = string(BOLDGREEN) + "> " + string(RESET) + message.get_nickname() + " joined " + arguments.at(0) + "\r\n";
+        } else if (message.get_command() == "PART") {
+            str_buffer = string(BOLDRED) + "< " + string(RESET) + message.get_nickname() + " left\r\n";
+        } else if (message.get_command() == "KICK") {
+            str_buffer = string(BOLDRED) + "<< " + message.get_nickname() + " got kicked from " + arguments.at(0) + " (" + arguments.at(2) + ")" + string(RESET) + "\r\n";
+        } else if (message.get_command() == "MODE") {
+            str_buffer = string(BOLDBLUE) + "* " + string(RESET) + message.get_nickname() + " set mode ";
+            for (unsigned int i = 0; i < arguments.size(); i++) {
+                str_buffer += arguments.at(i) + " ";
+            }
+            str_buffer += "\r\n";
+        } else if (message.get_command() == "QUIT") {
+            str_buffer = string(BOLDRED) + "<< " + string(RESET) + message.get_nickname() + " quit (" + arguments.at(0) + ")\r\n";
+        } else if (message.get_command() == "ERROR") {
+            str_buffer = string(BOLDRED) + "Error: " + arguments.at(0) + string(RESET) + "\r\n";
         } else {
             // Might be a server message, so let's check for the reply code.
             int reply_code = message.get_reply_code();

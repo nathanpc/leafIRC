@@ -16,4 +16,4 @@ debug: leaf
 clean:
 	rm -rf src/*.o src/core
 	rm -rf src/conio/*.o
-	rm -rf src/leaf
+	rm -rf leaf

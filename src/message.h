@@ -38,7 +38,7 @@ class Message {
         
         // Output operator for output streams
         friend std::ostream& operator<<(std::ostream& out, const Message& m);
-        
+
         std::string get_server();
         std::string get_nickname();
         std::string get_username();

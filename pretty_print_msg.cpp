@@ -19,7 +19,7 @@ Pretty_Print_Message::Pretty_Print_Message(const char *_buffer) {
     echo = true;
 }
 
-string Pretty_Print_Message::color_string(string nickname) {
+string Pretty_Print_Message::color_string(string nickname, bool include_msg) {
     // Generate a color for the nick based on its letters.
     string chars = " abcdefghijklmnopqrstuvwxyz1234567890_-";
     int color = 0;
@@ -40,7 +40,12 @@ string Pretty_Print_Message::color_string(string nickname) {
     // Build the string.
     color = (color % 7) + 1;
     sprintf(color_chr, "%d", color);
-    return "\033[1m\033[3" + string(color_chr) + "m";
+    
+    if (!include_msg) {
+        return "\033[1m\033[3" + string(color_chr) + "m";
+    } else {
+        return "\033[1m\033[3" + string(color_chr) + "m" + nickname + RESET;
+    }
 }
 
 string Pretty_Print_Message::generate(Message &message, Channels &channels) {
@@ -57,7 +62,7 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
 
             // A normal message.
             string nickname = message.get_nickname();
-            str_buffer = color_string(nickname) + "<" + nickname + "> " + string(RESET) + arguments.at(1) + "\r\n";
+            str_buffer = color_string(nickname, false) + "<" + nickname + "> " + string(RESET) + arguments.at(1) + "\r\n";
 
             if (arguments.at(1).size() > 6) {
                 if (arguments.at(1).substr(0, 7) == "\001ACTION") {
@@ -96,6 +101,9 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
     } else if (message.get_command() == "ERROR") {
         // Oh noes! Error!
         str_buffer = string(BOLDRED) + "Error: " + arguments.at(0) + string(RESET) + "\r\n";
+    } else if (message.get_command() == "NICK") {
+        // Someone is chaning the nick.
+        str_buffer = string(BOLDBLUE) + "* " + color_string(message.get_nickname(), true) + " is now known as " + color_string(arguments.at(0), true) + "\r\n";
     } else {
         // Might be a server message, so let's check for the reply code.
         int reply_code = message.get_reply_code();

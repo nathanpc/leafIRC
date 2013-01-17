@@ -5,6 +5,7 @@
  */
 
 #include <string>
+#include <cstdlib>
 
 #include "pretty_print_msg.h"
 #include "message.h"
@@ -18,7 +19,32 @@ Pretty_Print_Message::Pretty_Print_Message(const char *_buffer) {
     echo = true;
 }
 
+string Pretty_Print_Message::color_string(string nickname) {
+    // Generate a color for the nick based on its letters.
+    string chars = " abcdefghijklmnopqrstuvwxyz1234567890_-";
+    int color = 0;
+    char color_chr[2];
+
+    for (size_t i = 0; i < nickname.size(); i++) {
+        // Get the characted position in our dictionary.
+        size_t pos = chars.find(nickname.at(i));
+
+        // If we couldn't find it just default it to 10.
+        if (pos == string::npos) {
+            pos = 10;
+        }
+        
+        color += pos;
+    }
+
+    // Build the string.
+    color = (color % 7) + 1;
+    sprintf(color_chr, "%d", color);
+    return "\033[1m\033[3" + string(color_chr) + "m";
+}
+
 string Pretty_Print_Message::generate(Message &message, Channels &channels) {
+    // Parse and return a better and more human-readable message.
     string str_buffer(buffer);
     vector<string> arguments = message.get_command_args();
 
@@ -29,9 +55,9 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
                 echo = false;
             }
 
-            // TODO: Generate a color for each nick based on its letters.
             // A normal message.
-            str_buffer = string(BOLDWHITE) + "<" + message.get_nickname() + "> " + string(RESET) + arguments.at(1) + "\r\n";
+            string nickname = message.get_nickname();
+            str_buffer = color_string(nickname) + "<" + nickname + "> " + string(RESET) + arguments.at(1) + "\r\n";
 
             if (arguments.at(1).size() > 6) {
                 if (arguments.at(1).substr(0, 7) == "\001ACTION") {

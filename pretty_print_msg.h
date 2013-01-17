@@ -16,6 +16,8 @@ class Pretty_Print_Message {
         const char *buffer;
         bool echo;
 
+        std::string color_string(std::string nickname);
+
     public:
         Pretty_Print_Message(const char *_buffer);
 

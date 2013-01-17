@@ -111,3 +111,7 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
 
     return str_buffer;
 }
+
+bool Pretty_Print_Message::echo_message() {
+    return echo;
+}

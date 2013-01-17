@@ -75,7 +75,7 @@ void IRC_Client::message_handler(const char *buffer) {
         Pretty_Print_Message pretty_print(buffer);
         string str_buffer = pretty_print.generate(message, channels);
 		
-        if (pretty_print.echo) {
+        if (pretty_print.echo_message()) {
             time_t rawtime;
             struct tm *timeinfo;
             char time_str[12];

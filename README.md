@@ -14,7 +14,7 @@ This client is as command-line friendly as possible, instead of providing a "GUI
 
 Everyone loves screenshots, so this is how it looks (keep in mind that it's still under heavy development):
 
-![leafIRC awesomeness](http://f.cl.ly/items/271S3g0q1h2k1I2T1K3a/Screen%20Shot%202013-01-15%20at%2012.39.33%20AM.png)
+![leafIRC awesomeness](http://f.cl.ly/items/1z1R0x2X133C3h0r122j/Screen%20Shot%202013-01-17%20at%2011.14.38%20PM.png)
 
 
 ## Who's behind this?

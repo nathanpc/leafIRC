@@ -132,7 +132,7 @@ void REPL::read() {
 
 bool REPL::eval() {
     if (current_str != "" && current_str.at(0) == '/') {
-        // Command
+        // Gets the string between "/" and the first space.
         string command = current_str.substr(1, current_str.find(" ") - 1);
 
         if (command == "switch") {
@@ -145,6 +145,24 @@ bool REPL::eval() {
 
             external_command.push_back("switch");
             external_command.push_back(switch_channel);
+        } else if (command == "msg") {
+            // A better PRIVMSG.
+            external_command.push_back("msg");
+
+            // Get the message receiver.
+            string tmp_str = current_str.substr(current_str.find(" ") + 1);
+            external_command.push_back(tmp_str.substr(0, tmp_str.find(" ")));
+
+            // Get the message.
+            tmp_str = tmp_str.substr(tmp_str.find(" ") + 1);
+            external_command.push_back(tmp_str);
+        } else if (command == "me") {
+            // ACTIONs!
+            external_command.push_back("me");
+            
+            // Get the message.
+            string action_msg = current_str.substr(current_str.find(" ") + 1);
+            external_command.push_back(action_msg);
         } else {
             // Common IRC command.
             current_str = current_str.substr(1);

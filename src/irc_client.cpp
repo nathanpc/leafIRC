@@ -213,6 +213,16 @@ void IRC_Client::start_connection() {
                         channels.cache(channels.list.at(channels.current), cache_msg);
                         send_data(send_msg.c_str());
                     }
+                } else if (command == "msg") {
+                    // A better PRIVMSG.
+                    string send_msg = "PRIVMSG " + repl.external_command.at(1) + " :" + repl.external_command.at(2) + "\r\n";
+                    send_data(send_msg.c_str());
+                } else if (command == "me") {
+                    // ACTIONs!
+                    string curr_channel = channels.list.at(channels.current);
+                    string send_msg = "PRIVMSG #" + curr_channel + " :\001ACTION " + repl.external_command.at(1) + "\r\n";
+
+                    send_data(send_msg.c_str());
                 }
             } else {
                 // Just send raw stuff.

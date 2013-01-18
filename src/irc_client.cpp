@@ -212,6 +212,9 @@ void IRC_Client::start_connection() {
                         channels.cache(channels.list.at(channels.current), cache_msg);
                         send_data(send_msg.c_str());
                     }
+                } else if (command == "msg") {
+                    string send_msg = "PRIVMSG " + repl.external_command.at(1) + " :" + repl.external_command.at(2) + "\r\n";
+                    send_data(send_msg.c_str());
                 }
             } else {
                 // Just send raw stuff.

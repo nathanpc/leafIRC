@@ -156,6 +156,13 @@ bool REPL::eval() {
             // Get the message.
             tmp_str = tmp_str.substr(tmp_str.find(" ") + 1);
             external_command.push_back(tmp_str);
+        } else if (command == "me") {
+            // ACTIONs!
+            external_command.push_back("me");
+            
+            // Get the message.
+            string action_msg = current_str.substr(current_str.find(" ") + 1);
+            external_command.push_back(action_msg);
         } else {
             // Common IRC command.
             current_str = current_str.substr(1);

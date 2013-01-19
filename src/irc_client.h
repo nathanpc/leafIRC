@@ -40,7 +40,8 @@ class IRC_Client {
         std::string realname;
 
         // Constructor.
-        IRC_Client(std::string _server, std::string _port, std::string _server_pass);
+        IRC_Client(std::string _server, std::string _port = "6667",
+        	std::string _server_pass = "");
         //~IRC_Client();
 
         void setup_user(std::string _nick, std::string _username, std::string _realname);

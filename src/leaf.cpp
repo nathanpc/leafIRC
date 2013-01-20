@@ -17,13 +17,15 @@ using namespace std;
 int main(int argc, char *argv[]) {
     Config config;
 
-    IRC_Client client("localhost", "6667", "");
-    //IRC_Client client("irc.freenode.net", "6667", "");
+    IRC_Client client("localhost");
+    //IRC_Client client("irc.freenode.net");
+    
     client.setup_user(config.user_nick, config.user_username,
     	config.user_realname);
 
     Splash::print();
+    
     client.start_connection();
-
-    return 0;
+    
+    return client.run();
 }

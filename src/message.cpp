@@ -3,9 +3,10 @@
  *
  *  @author Nathan Campos
  */
-
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -14,6 +15,8 @@
 #include "message.h"
 using namespace std;
 
+Message::Message() {}
+
 Message::Message(const char* s) {
 	if ((raw = _raw = strip_end_newline(s)).empty()) {
 		cerr << "Message::Message() \"message is empty\"\n";
@@ -21,6 +24,35 @@ Message::Message(const char* s) {
 	}
 	
 	parse();
+}
+
+Message::Message(const Message& m)
+{
+	copy(m);
+}
+
+Message& Message::operator=(const Message& m)
+{
+	copy(m);
+	return *this;
+}
+
+void Message::copy(const Message& m)
+{
+	// Check for self-assignment
+	if(this != &m)
+	{
+		_raw		= m._raw;
+		raw			= m.raw;
+		server		= m.server;
+		nickname	= m.nickname;
+		username	= m.username;
+		hostname	= m.hostname;
+		cmd			= m.cmd;
+		
+		args.clear();
+		std::copy(m.args.begin(), m.args.end(), back_inserter(args));
+	}
 }
 
 static string changeNewlines(const string& s) {
@@ -200,8 +232,10 @@ string Message::parse_arguments() {
 		    // Add the last parsed argument to the arguments vector
 		    args.push_back(raw.substr(0, current_pos));
 		    
-		    // Erase the last parsed argument from the raw string, possibly making it empty
-		    raw.erase(0, current_pos == string::npos ? current_pos : current_pos + 1);
+		    // Erase the last parsed argument from the raw string,
+		    // possibly making it empty
+		    raw.erase(0, current_pos == string::npos ?
+		    	current_pos : current_pos + 1);
 		}
 	}
 	

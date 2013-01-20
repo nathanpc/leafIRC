@@ -31,10 +31,15 @@ class Message {
         std::string strip_end_newline(std::string line);
         
         bool parse();
+        
+        void copy(const Message& rhs);
 
     public:
-        // Constructor.
+        // Constructors.
+        Message();
         Message(const char* s);
+        Message(const Message& m);
+        Message& operator=(const Message& m);
         
         // Output operator for output streams
         friend std::ostream& operator<<(std::ostream& out, const Message& m);

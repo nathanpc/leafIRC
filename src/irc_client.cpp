@@ -37,6 +37,7 @@ IRC_Client::IRC_Client(string _server, string _port, string _server_password) {
     server = _server;
     port = _port;
     server_password = _server_password;
+    connected = false;
 }
 
 void IRC_Client::setup_user(string _nick, string _username, string _realname) {
@@ -65,11 +66,13 @@ void IRC_Client::message_handler(const char *buffer) {
 		exit(1);
 	}
 	
-    Message message(buffer);
+    message = Message(buffer);
 
     if (message.get_command() == "PING") {
-    	// There is an assumption here that message.get_command_args() is not empty
-        IRC_Client::send_data("PONG " + message.get_command_args().at(0) + "\r\n");
+    	// There is an assumption here that
+    	// message.get_command_args() is not empty
+        IRC_Client::send_data("PONG " + message.get_command_args().at(0) +
+        	"\r\n");
     } else {
         // Messages that need to be echoed.
         Pretty_Print_Message pretty_print(buffer);
@@ -137,16 +140,19 @@ void *IRC_Client::handle_recv(void) {
 		}
     }
     
-    // Connection closed or there was an error
+    // Check if there was an error
     if (numbytes == -1) {
     	perror("IRC_Client::handle_recv");
     	exit(EXIT_FAILURE);
     }
 
-    repl.~REPL();
-    exit(0);
+    connected = false;
     
     return NULL;
+}
+
+void * IRC_Client::handle_recv_thread_helper(void *context) {
+	return ((IRC_Client *)context)->handle_recv();
 }
 
 void IRC_Client::start_connection() {
@@ -156,38 +162,50 @@ void IRC_Client::start_connection() {
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    int res;
-    if ((res = getaddrinfo(server.c_str(), port.c_str(), &hints, &servinfo)) != 0) {
+    int res = getaddrinfo(server.c_str(), port.c_str(), &hints, &servinfo);
+    
+    if (res != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(res));
     }
 
     // Setup the socket descriptor.
-    if ((sd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1) {
-        perror("Error while assigning the socket descriptor");
+    sd = socket(servinfo->ai_family, servinfo->ai_socktype,
+    	servinfo->ai_protocol);
+    
+    if (sd == -1) {
+        perror("socket");
     }
 
     // Connect!
     if (connect(sd, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
         close(sd);
-        perror("Couldn't connect");
+        perror("connect");
     }
     
-    freeaddrinfo(servinfo);  // Free the server information, we don't need it anymore.
+    connected = true;
+    
+    // Free the server information, we don't need it anymore.
+    freeaddrinfo(servinfo);
     pthread_create(&thread, NULL, &handle_recv_thread_helper, this);
+}
 
-    bool just_connected = true;
-    while (true) {
-        if (just_connected) {
-            // Send the first authentication messages to the server.
-            send_data("NICK " + nick + "\r\n");
-            send_data("USER " + username + " 0 * :" + realname + "\r\n");
-
-            just_connected = false;
-        }
-
+int IRC_Client::run()
+{
+	// Check if we're not connected
+	if(!is_connected())
+	{
+		cerr << "Error: \"no connection found\"\n";
+		return EXIT_FAILURE;
+	}
+	
+	// Send the first authentication messages to the server.
+	send_data("NICK " + nick + "\r\n");
+	send_data("USER " + username + " 0 * :" + realname + "\r\n");
+	
+    while (is_connected()) {
         // Read the user input.
-        repl.read();
-
+		repl.read();
+        
         // Check if the user input is ready to be processed.
         if (repl.string_is_ready) {
             if (!repl.external_command.empty()) {
@@ -196,31 +214,42 @@ void IRC_Client::start_connection() {
 
                 if (command == "switch") {
                     // Switching channels.
-                    channels.current = channels.find_index(repl.external_command.at(1));
+                    channels.current =
+                    	channels.find_index(repl.external_command.at(1));
 
                     repl.clear();
-                    cout << "\r" << BOLDBLUE << "Switching to #" << repl.external_command.at(1) << RESET << "\r\n";
-                    cout << channels.load_cache(repl.external_command.at(1));
+                    cout << "\r" << BOLDBLUE << "Switching to #"
+                    	 << repl.external_command.at(1) << RESET << "\r\n"
+                    	 << channels.load_cache(repl.external_command.at(1));
+                    
                     repl.current_str = "";
                 } else if (command == "message") {
-                    // Just a normal message that needs to be sent to the current channel.
+                    // Just a normal message that needs
+                    // to be sent to the current channel.
                     if (channels.current != -1) {
                         // Include the command to the message.
-                        string send_msg = "PRIVMSG #" + channels.list.at(channels.current) + " :" + repl.current_str;
-
+                        string send_msg = "PRIVMSG #" +
+                        	channels.list.at(channels.current) + " :" +
+                        	repl.current_str;
+                        
                         // TODO: Get nick.
-                        string cache_msg = string(BOLDWHITE) + "<Me> " + string(RESET) + repl.current_str;
-                        channels.cache(channels.list.at(channels.current), cache_msg);
+                        string cache_msg = string(BOLDWHITE) + "<Me> " +
+                        	string(RESET) + repl.current_str;
+                        channels.cache(channels.list.at(channels.current),
+                        	cache_msg);
                         send_data(send_msg.c_str());
                     }
                 } else if (command == "msg") {
                     // A better PRIVMSG.
-                    string send_msg = "PRIVMSG " + repl.external_command.at(1) + " :" + repl.external_command.at(2) + "\r\n";
+                    string send_msg = "PRIVMSG " +
+                    	repl.external_command.at(1) + " :" +
+                    	repl.external_command.at(2) + "\r\n";
                     send_data(send_msg.c_str());
                 } else if (command == "me") {
                     // ACTIONs!
                     string curr_channel = channels.list.at(channels.current);
-                    string send_msg = "PRIVMSG #" + curr_channel + " :\001ACTION " + repl.external_command.at(1) + "\r\n";
+                    string send_msg = "PRIVMSG #" + curr_channel +
+                    	" :\001ACTION " + repl.external_command.at(1) + "\r\n";
 
                     send_data(send_msg.c_str());
                 }
@@ -230,4 +259,12 @@ void IRC_Client::start_connection() {
             }
         }
     }
+    
+    return EXIT_SUCCESS;
+}
+
+// Return true if the client is connected to a server
+bool IRC_Client::is_connected() const
+{
+	return connected;
 }

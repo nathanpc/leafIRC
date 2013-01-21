@@ -85,7 +85,9 @@ void IRC_Client::message_handler(const char *buffer) {
 
         if (message.get_command() == "001") {
             // Just connected to the server.
-            send_data("PRIVMSG NickServ :identify " + nickserv + "\r\n");
+            if (nickserv != "") {
+                send_data("PRIVMSG NickServ :identify " + nickserv + "\r\n");
+            }
         }
 
         if (pretty_print.echo_message()) {

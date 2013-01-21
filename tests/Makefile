@@ -30,3 +30,4 @@ $(NAME) : $(SRC)
 
 clean:
 	rm -rf $(NAME)
+	rm -rf $(NAME).dSYM

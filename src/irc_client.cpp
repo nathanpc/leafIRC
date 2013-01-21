@@ -198,12 +198,10 @@ void IRC_Client::start_connection() {
 
 void IRC_Client::close_connection() {
 	// First check if we are already connected
-	if(is_connected())
-	{
+	if (is_connected()) {
 		// If so, disconnect and check for any errors
-		if(close(sd) != 0)
-		{
-			perror("close");
+		if (close(sd) != 0) {
+			perror("Error while trying to close the connection");
 		}
 		
 		// We disconnected correctly
@@ -213,9 +211,8 @@ void IRC_Client::close_connection() {
 
 int IRC_Client::run() {
 	// Check if we're not connected
-	if(!is_connected())
-	{
-		cerr << "Error: \"no connection found\"\n";
+	if (!is_connected()) {
+		cerr << "Error: \"No connection found\"\n";
 		return EXIT_FAILURE;
 	}
 	

@@ -67,6 +67,9 @@ void IRC_Client::message_handler(const char *buffer) {
 	}
 	
     message = Message(buffer);
+    
+    // Add message to log so we can test the connection
+    log.push_back(message);
 
     if (message.get_command() == "PING") {
     	// There is an assumption here that

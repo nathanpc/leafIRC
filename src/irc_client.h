@@ -45,6 +45,8 @@ class IRC_Client {
         // Current message being processed
         Message message;
         
+        std::vector<Message> log;
+        
         // Constructor.
         IRC_Client(std::string _server, std::string _port = "6667",
         	std::string _server_pass = "");

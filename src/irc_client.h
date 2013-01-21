@@ -24,8 +24,8 @@ class IRC_Client {
 
         bool send_data(std::string data);
         void message_handler(const char *buffer);
-        void * handle_recv(void);
-        static void * handle_recv_thread_helper(void *context);
+        void *handle_recv(void);
+        static void *handle_recv_thread_helper(void *context);
 
     public:
         pthread_t thread;
@@ -41,6 +41,7 @@ class IRC_Client {
         std::string nick;
         std::string username;
         std::string realname;
+        std::string nickserv;
         
         // Current message being processed
         Message message;
@@ -53,7 +54,7 @@ class IRC_Client {
         //~IRC_Client();
 
         void setup_user(std::string _nick, std::string _username,
-        	std::string _realname);
+        	std::string _realname, std::string _nickserv);
         
         void start_connection();
         void close_connection();

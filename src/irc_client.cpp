@@ -37,13 +37,15 @@ IRC_Client::IRC_Client(string _server, string _port, string _server_password) {
     server = _server;
     port = _port;
     server_password = _server_password;
+
     connected = false;
 }
 
-void IRC_Client::setup_user(string _nick, string _username, string _realname) {
+void IRC_Client::setup_user(string _nick, string _username, string _realname, string _nickserv) {
     nick = _nick;
     username = _username;
     realname = _realname;
+    nickserv = _nickserv;
 }
 
 bool IRC_Client::send_data(string data) {
@@ -80,7 +82,12 @@ void IRC_Client::message_handler(const char *buffer) {
         // Messages that need to be echoed.
         Pretty_Print_Message pretty_print(buffer);
         string str_buffer = pretty_print.generate(message, channels);
-		
+
+        if (message.get_command() == "001") {
+            // Just connected to the server.
+            send_data("PRIVMSG NickServ :identify " + nickserv + "\r\n");
+        }
+
         if (pretty_print.echo_message()) {
             time_t rawtime;
             struct tm *timeinfo;

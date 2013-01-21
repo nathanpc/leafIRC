@@ -2,3 +2,4 @@
 *.o
 leaf
 TODO
+tests/googletest/make/gtest_main.a

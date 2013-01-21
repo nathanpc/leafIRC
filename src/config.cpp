@@ -23,7 +23,7 @@ Config::Config() {
     config_dir = expand_path(HOME_DIR);
     history_dir = config_dir + string(HISTORY_DIR);
 
-    read_config_file();
+    read_general_config_file();
     clear_cache();
 }
 
@@ -76,7 +76,7 @@ string clean_config_string(string str) {
     return str;
 }
 
-void Config::read_config_file() {
+void Config::read_general_config_file() {
     string config_file = config_dir + "/leaf.conf";
     INIReader reader = INIReader(config_file);
     if (reader.ParseError() < 0) {
@@ -88,11 +88,46 @@ void Config::read_config_file() {
     user_nick = reader.Get("user", "nick", "leafirc");
     user_username = reader.Get("user", "username", "leafirc");
     user_realname = reader.Get("user", "realname", "leafIRC");
+    user_password = reader.Get("user", "nickserv", "");
 
     // Clean the values.
     user_nick = clean_config_string(user_nick);
     user_username = clean_config_string(user_username);
     user_realname = clean_config_string(user_realname);
+    user_password = clean_config_string(user_password);
+}
+
+void Config::read_user_config_file(const char *server_alias) {
+    string config_file = config_dir + "/user.conf";
+    INIReader reader = INIReader(config_file);
+    string alias = string(server_alias);
+    
+    if (reader.ParseError() >= 0) {
+        // Get the server location based on the alias given.
+        server_location = reader.Get(alias, "location", "");
+        server_location = clean_config_string(server_location);
+
+        if (server_location != "") {
+            user_nick = reader.Get(alias, "nick", user_nick);
+            user_username = reader.Get(alias, "username", user_username);
+            user_realname = reader.Get(alias, "realname", user_realname);
+            user_password = reader.Get(alias, "nickserv", user_password);
+            
+            // Clean the values.
+            user_nick = clean_config_string(user_nick);
+            user_username = clean_config_string(user_username);
+            user_realname = clean_config_string(user_realname);
+            user_password = clean_config_string(user_password);
+        } else {
+            server_location = string(alias);
+        }
+    } else {
+        server_location = string(alias);
+    }
+}
+
+void Config::load_user_config(const char *server_alias) {
+    read_user_config_file(server_alias);
 }
 
 string Config::cache_filename(string channel_name, unsigned int index) {

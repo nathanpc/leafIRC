@@ -13,21 +13,20 @@ CPPFLAGS += -I $(GTEST_DIR)/include -I $(SRC_DIR)
 CXXFLAGS += -g -Wall -Wextra
 
 LIB  = $(GTEST_DIR)/make/gtest_main.a
-SRC  = irc_client_test.cpp
+SRC  = $(NAME)_test.cpp
 OBJS = $(SRC_DIR)/irc_client.cpp $(SRC_DIR)/repl.cpp $(SRC_DIR)/channels.cpp \
 	$(SRC_DIR)/message.cpp $(SRC_DIR)/pretty_print_msg.cpp \
 	$(SRC_DIR)/conio/conio.cpp $(SRC_DIR)/inih/cpp/INIReader.cpp \
 	$(SRC_DIR)/inih/ini.cpp $(SRC_DIR)/config.cpp
-NAME = irc_client_test
 
-tests: $(NAME)
+tests: $(NAME)_test
 
-$(NAME) : $(SRC)
+$(NAME)_test: $(SRC)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LIB) $(OBJS) $^ -o $@
 
-%.o : %.cpp
+%.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
 
 clean:
-	rm -rf $(NAME)
-	rm -rf $(NAME).dSYM
+	rm -rf *_test
+	rm -rf *.dSYM

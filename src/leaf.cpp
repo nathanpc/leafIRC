@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
     	config.user_realname);
 
     Splash::print();
-    
     client.start_connection();
     
     return client.run();

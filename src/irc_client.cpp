@@ -187,20 +187,34 @@ void IRC_Client::start_connection() {
     // Free the server information, we don't need it anymore.
     freeaddrinfo(servinfo);
     pthread_create(&thread, NULL, &handle_recv_thread_helper, this);
+    
+    // Send the first authentication messages to the server.
+	send_data("NICK " + nick + "\r\n");
+	send_data("USER " + username + " 0 * :" + realname + "\r\n");
 }
 
-int IRC_Client::run()
-{
+void IRC_Client::close_connection() {
+	// First check if we are already connected
+	if(is_connected())
+	{
+		// If so, disconnect and check for any errors
+		if(close(sd) != 0)
+		{
+			perror("close");
+		}
+		
+		// We disconnected correctly
+		connected = false;
+	}
+}
+
+int IRC_Client::run() {
 	// Check if we're not connected
 	if(!is_connected())
 	{
 		cerr << "Error: \"no connection found\"\n";
 		return EXIT_FAILURE;
 	}
-	
-	// Send the first authentication messages to the server.
-	send_data("NICK " + nick + "\r\n");
-	send_data("USER " + username + " 0 * :" + realname + "\r\n");
 	
     while (is_connected()) {
         // Read the user input.
@@ -264,7 +278,6 @@ int IRC_Client::run()
 }
 
 // Return true if the client is connected to a server
-bool IRC_Client::is_connected() const
-{
+bool IRC_Client::is_connected() const {
 	return connected;
 }

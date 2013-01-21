@@ -24,8 +24,8 @@ class IRC_Client {
 
         bool send_data(std::string data);
         void message_handler(const char *buffer);
-        void *handle_recv(void);
-        static void *handle_recv_thread_helper(void *context);
+        void * handle_recv(void);
+        static void * handle_recv_thread_helper(void *context);
 
     public:
         pthread_t thread;
@@ -45,9 +45,6 @@ class IRC_Client {
         // Current message being processed
         Message message;
         
-        // Container of the processed messages
-        std::vector<std::string> log;
-        
         // Constructor.
         IRC_Client(std::string _server, std::string _port = "6667",
         	std::string _server_pass = "");
@@ -57,6 +54,7 @@ class IRC_Client {
         	std::string _realname);
         
         void start_connection();
+        void close_connection();
         
         // Run the main loop for the client
         int run();

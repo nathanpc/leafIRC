@@ -17,3 +17,11 @@ clean:
 	rm -rf src/*.o src/core
 	rm -rf src/conio/*.o
 	rm -rf leaf
+
+install:
+	chmod a+x install.sh
+	sh ./install.sh
+
+uninstall:
+	sudo rm -f /usr/bin/leaf
+	rm -rf ~/.leafirc/

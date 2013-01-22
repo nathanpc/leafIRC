@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 
     IRC_Client client(config.server_location);
     client.setup_user(config.user_nick, config.user_username,
-    	config.user_realname, config.user_password);
+    	config.user_realname, config.user_password, config.channels);
 
     Splash::print();
     client.start_connection();

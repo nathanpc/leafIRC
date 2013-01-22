@@ -118,6 +118,10 @@ void Config::read_user_config_file(const char *server_alias) {
             user_username = clean_config_string(user_username);
             user_realname = clean_config_string(user_realname);
             user_password = clean_config_string(user_password);
+            
+            // Populate the channels vector.
+            populate_channels_vector(clean_config_string(
+                reader.Get(alias, "channels", "")));
         } else {
             server_location = string(alias);
         }
@@ -135,4 +139,18 @@ string Config::cache_filename(string channel_name, unsigned int index) {
     stream << history_dir << "/" << index << "_" << channel_name << ".log";
 
     return stream.str();
+}
+
+void Config::populate_channels_vector(string channels_str) {
+    while (channels_str.find(",") != string::npos) {
+        //+1 is needed
+        size_t pos = channels_str.find(",");
+
+        channels.push_back(channels_str.substr(0, pos));
+        channels_str.erase(0, pos + 1);
+    }
+    
+    if (!channels_str.empty()) {
+        channels.push_back(channels_str);
+    }
 }

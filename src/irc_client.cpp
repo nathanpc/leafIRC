@@ -41,11 +41,12 @@ IRC_Client::IRC_Client(string _server, string _port, string _server_password) {
     connected = false;
 }
 
-void IRC_Client::setup_user(string _nick, string _username, string _realname, string _nickserv) {
+void IRC_Client::setup_user(string _nick, string _username, string _realname, string _nickserv, vector<string> _autojoin_channels) {
     nick = _nick;
     username = _username;
     realname = _realname;
     nickserv = _nickserv;
+    autojoin_channels = _autojoin_channels;
 }
 
 bool IRC_Client::send_data(string data) {
@@ -86,7 +87,14 @@ void IRC_Client::message_handler(const char *buffer) {
         if (message.get_command() == "001") {
             // Just connected to the server.
             if (nickserv != "") {
+                // Auto-identify with NickServ.
                 send_data("PRIVMSG NickServ :identify " + nickserv + "\r\n");
+            }
+            
+            if (autojoin_channels.size() > 0) {
+                for (size_t i = 0; i < autojoin_channels.size(); i++) {
+                    send_data("JOIN " + autojoin_channels.at(i) + "\r\n");
+                }
             }
         }
 

@@ -36,6 +36,33 @@ void REPL::add_history() {
     history.push_back(current_str);
 }
 
+void REPL::back_history() {
+    if (history_current_position < history.size()) {
+        clear();
+    
+        current_str = history.at(history.size() - 1 - history_current_position);
+        history_current_position++;
+    
+        rewrite();
+    }
+}
+
+void REPL::forward_history() {
+    if (history_current_position != 0) {
+        clear();
+    
+        if (history_current_position - 1 > 0) {
+            current_str = history.at(history.size() + 1 - history_current_position);
+            history_current_position--;
+        } else {
+            history_current_position = 0;
+            current_str = "";
+        }
+    
+        rewrite();
+    }
+}
+
 void REPL::clear() {
     int curr_input_length = current_str.length() + input_marker.length();
 
@@ -79,29 +106,10 @@ void REPL::read() {
             curr_char = Conio::getche();
             if (curr_char == 65) {
                 // Up
-                if (history_current_position < history.size()) {
-                    clear();
-
-                    current_str = history.at(history.size() - 1 - history_current_position);
-                    history_current_position++;
-
-                    rewrite();
-                }
+                back_history();
             } else if (curr_char == 66) {
                 // Down
-                if (history_current_position != 0) {
-                    clear();
-
-                    if (history_current_position - 1 > 0) {
-                        current_str = history.at(history.size() + 1 - history_current_position);
-                        history_current_position--;
-                    } else {
-                        history_current_position = 0;
-                        current_str = "";
-                    }
-
-                    rewrite();
-                }
+                forward_history();
             }
         }
     } else if (curr_char != 10) {

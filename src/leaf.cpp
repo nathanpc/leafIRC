@@ -16,7 +16,7 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        cout << "Usage: leaf server_alias|server_url" << endl;
+        cerr << "Usage: leaf server_alias|server_url" << endl;
         return 1;
     }
 

@@ -1,19 +1,19 @@
 #!/bin/sh
 
 # Copy the binary and chmod it.
-echo "cp leaf /usr/bin"
-sudo cp leaf /usr/bin
-echo "chmod a+x /usr/bin/leaf"
-sudo chmod a+x /usr/bin/leaf
+echo "install leaf $1"
+sudo install ./leaf $1
+echo "chmod a+x $1/leaf"
+sudo chmod a+x $1/leaf
 
 if [ ! -d ~/.leafirc ]; then
 	# Make directory and copy files.
 	echo "mkdir ~/.leafirc"
 	mkdir ~/.leafirc
-	echo "cp conf/leaf.conf ~/.leafirc/"
-	cp conf/leaf.conf ~/.leafirc/
-	echo "cp conf/user.conf ~/.leafirc/"
-	cp conf/user.conf ~/.leafirc/
+	echo "install -v conf/leaf.conf ~/.leafirc"
+	install -v conf/leaf.conf ~/.leafirc
+	echo "install -v conf/user.conf ~/.leafirc"
+	install -v conf/user.conf ~/.leafirc
 	
 	# Force the user to edit the config files.
 	echo ""

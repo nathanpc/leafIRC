@@ -28,5 +28,5 @@ $(NAME)_test: $(SRC)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
 
 clean:
-	rm -rf *_test
+	rm -rf $(NAME)_test
 	rm -rf *.dSYM

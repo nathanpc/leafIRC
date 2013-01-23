@@ -4,8 +4,8 @@
  *  @author Nathan Campos
  */
 
-#ifndef MESSAGE_H_
-#define MESSAGE_H_
+#ifndef LEAF_MESSAGE_H_
+#define LEAF_MESSAGE_H_
 
 #include <iosfwd>
 #include <string>
@@ -53,4 +53,4 @@ class Message {
         int get_reply_code();
 };
 
-#endif
+#endif	// LEAF_MESSAGE_H_

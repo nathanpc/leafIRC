@@ -6,8 +6,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <vector>
 #include <sys/stat.h>
 #include <wordexp.h>
 #include <sstream>

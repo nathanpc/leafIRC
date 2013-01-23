@@ -4,8 +4,8 @@
  *  @author Nathan Campos
  */
 
-#ifndef REPL_H_
-#define REPL_H_
+#ifndef LEAF_REPL_H_
+#define LEAF_REPL_H_
 
 #include <string>
 #include <vector>
@@ -37,4 +37,4 @@ class REPL {
         bool eval();
 };
 
-#endif
+#endif	// LEAF_REPL_H_

@@ -233,10 +233,10 @@ int IRC_Client::run() {
 		return EXIT_FAILURE;
 	}
 	
+	// Read the user input.
+	repl.read();
+	
     while (is_connected()) {
-        // Read the user input.
-		repl.read();
-        
         // Check if the user input is ready to be processed.
         if (repl.string_is_ready) {
             if (!repl.external_command.empty()) {
@@ -289,6 +289,9 @@ int IRC_Client::run() {
                 send_data(repl.current_str.c_str());
             }
         }
+        
+        // Read the user input.
+		repl.read();
     }
     
     return EXIT_SUCCESS;

@@ -5,8 +5,8 @@
  *  @author Nathan Campos
  */
 
-#ifndef IRC_CLIENT_H_
-#define IRC_CLIENT_H_
+#ifndef LEAF_IRC_CLIENT_H_
+#define LEAF_IRC_CLIENT_H_
 
 #include <string>
 #include <vector>
@@ -68,4 +68,4 @@ class IRC_Client {
         bool is_connected() const;
 };
 
-#endif
+#endif	// LEAF_IRC_CLIENT_H_

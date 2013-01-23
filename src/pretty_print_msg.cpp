@@ -4,16 +4,14 @@
  *  @author Nathan Campos
  */
 
-#include <string>
-#include <vector>
 #include <cstdio>
 #include <cstdlib>
 
-#include "pretty_print_msg.h"
-#include "message.h"
 #include "channels.h"
 #include "color.h"
 #include "irc_reply_codes.h"
+#include "message.h"
+#include "pretty_print_msg.h"
 using namespace std;
 
 Pretty_Print_Message::Pretty_Print_Message(const char *_buffer) {

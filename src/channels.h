@@ -4,8 +4,8 @@
  *  @author Nathan Campos
  */
 
-#ifndef CHANNEL_H_
-#define CHANNEL_H_
+#ifndef LEAF_CHANNEL_H_
+#define LEAF_CHANNEL_H_
 
 #include <string>
 #include <vector>
@@ -28,4 +28,4 @@ class Channels {
         void remove(unsigned int index);
 };
 
-#endif
+#endif	// LEAF_CHANNEL_H_

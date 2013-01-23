@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <sstream>
 
 #include "channels.h"
 #include "color.h"
@@ -107,6 +108,7 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
     } else {
         // Might be a server message, so let's check for the reply code.
         int reply_code = message.get_reply_code();
+        ostringstream stream;
 
         switch (reply_code) {
             case RPL_TOPIC:
@@ -119,8 +121,22 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
                 break;
             case RPL_NAMREPLY:
                 // Got a list of the people online.
-                //[01:48:50] :irc.arcti.ca 353 leafirc = #leafirc :leafirc nathanpc @vivid_
-                //[01:48:50] :irc.arcti.ca 366 leafirc #leafirc :End of /NAMES list.
+                stream << "Users: ";
+                
+                str_buffer = arguments.at(3);
+                while (str_buffer.find(" ") != string::npos) {
+                    size_t pos = str_buffer.find(" ");
+                
+                    stream << color_string(str_buffer.substr(0, pos), true) << " ";
+                    str_buffer.erase(0, pos + 1);
+                }
+                
+                if (!str_buffer.empty()) {
+                    stream << color_string(str_buffer, true);
+                }
+                
+                stream << "\r\n";
+                str_buffer = stream.str();
                 break;
             case RPL_ENDOFNAMES:
                 // (Ignored) Got the end of the online names list

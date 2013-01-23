@@ -37,13 +37,16 @@ IRC_Client::IRC_Client(string _server, string _port, string _server_password) {
     server = _server;
     port = _port;
     server_password = _server_password;
+
     connected = false;
 }
 
-void IRC_Client::setup_user(string _nick, string _username, string _realname) {
+void IRC_Client::setup_user(string _nick, string _username, string _realname, string _nickserv, vector<string> _autojoin_channels) {
     nick = _nick;
     username = _username;
     realname = _realname;
+    nickserv = _nickserv;
+    autojoin_channels = _autojoin_channels;
 }
 
 bool IRC_Client::send_data(string data) {
@@ -80,7 +83,21 @@ void IRC_Client::message_handler(const char *buffer) {
         // Messages that need to be echoed.
         Pretty_Print_Message pretty_print(buffer);
         string str_buffer = pretty_print.generate(message, channels);
-		
+
+        if (message.get_command() == "001") {
+            // Just connected to the server.
+            if (nickserv != "") {
+                // Auto-identify with NickServ.
+                send_data("PRIVMSG NickServ :identify " + nickserv + "\r\n");
+            }
+            
+            if (autojoin_channels.size() > 0) {
+                for (size_t i = 0; i < autojoin_channels.size(); i++) {
+                    send_data("JOIN " + autojoin_channels.at(i) + "\r\n");
+                }
+            }
+        }
+
         if (pretty_print.echo_message()) {
             time_t rawtime;
             struct tm *timeinfo;
@@ -198,12 +215,10 @@ void IRC_Client::start_connection() {
 
 void IRC_Client::close_connection() {
 	// First check if we are already connected
-	if(is_connected())
-	{
+	if (is_connected()) {
 		// If so, disconnect and check for any errors
-		if(close(sd) != 0)
-		{
-			perror("close");
+		if (close(sd) != 0) {
+			perror("Error while trying to close the connection");
 		}
 		
 		// We disconnected correctly
@@ -213,9 +228,8 @@ void IRC_Client::close_connection() {
 
 int IRC_Client::run() {
 	// Check if we're not connected
-	if(!is_connected())
-	{
-		cerr << "Error: \"no connection found\"\n";
+	if (!is_connected()) {
+		cerr << "Error: \"No connection found\"\n";
 		return EXIT_FAILURE;
 	}
 	

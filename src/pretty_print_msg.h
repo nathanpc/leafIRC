@@ -8,6 +8,7 @@
 #define PRETTY_PRINT_MSG_H_
 
 #include <string>
+#include <vector>
 #include "message.h"
 #include "channels.h"
 

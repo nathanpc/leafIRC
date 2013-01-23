@@ -19,18 +19,24 @@ class Config {
         bool directory_exists(const char *directory);
         void build_dir(const char *directory);
         void clear_cache();
-        void read_config_file();
+        void read_general_config_file();
+        void read_user_config_file(const char *server_alias);
+        void populate_channels_vector(std::string channels_str);
 
     public:
+        std::string server_location;
         std::string user_nick;
         std::string user_username;
         std::string user_realname;
+        std::string user_password;
+        std::vector<std::string> channels;
 
         // Constructor.
         Config();
 
         void check_dirs(std::string optional_dir);
         std::string cache_filename(std::string channel_name, unsigned int index);
+        void load_user_config(const char *server_alias);
 };
 
 #endif

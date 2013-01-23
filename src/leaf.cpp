@@ -15,16 +15,19 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    Config config;
+    if (argc < 2) {
+        cout << "Usage: leaf server_alias|server_url" << endl;
+        return 1;
+    }
 
-    //IRC_Client client("localhost");
-    IRC_Client client("irc.freenode.net");
-    
+    Config config;
+    config.load_user_config(argv[1]);
+
+    IRC_Client client(config.server_location);
     client.setup_user(config.user_nick, config.user_username,
-    	config.user_realname);
+    	config.user_realname, config.user_password, config.channels);
 
     Splash::print();
-    
     client.start_connection();
     
     return client.run();

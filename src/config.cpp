@@ -143,7 +143,6 @@ string Config::cache_filename(string channel_name, unsigned int index) {
 
 void Config::populate_channels_vector(string channels_str) {
     while (channels_str.find(",") != string::npos) {
-        //+1 is needed
         size_t pos = channels_str.find(",");
 
         channels.push_back(channels_str.substr(0, pos));

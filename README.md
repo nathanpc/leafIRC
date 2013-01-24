@@ -10,7 +10,7 @@ This is not just another IRC client. It's not meant to replace your [irssi](http
 This client is as command-line friendly as possible, instead of providing a "GUI in the command-line" (aka TUI) it makes you feel at home without dragging you to a different kind experience.
 
 
-## How does it look like?
+## What does it look like?
 
 Everyone loves screenshots, so this is how it looks (keep in mind that it's still under heavy development):
 

@@ -47,7 +47,7 @@ public:
 	void rewrite();
 	
 	// Read input from stdin
-	void read();
+	bool read();
 	
 	// Evaluate the input to see what type of message it is
 	bool eval();

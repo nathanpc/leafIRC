@@ -55,9 +55,9 @@ IRC_Client::IRC_Client(string _server, string _port, string _server_password) {
 
 IRC_Client::~IRC_Client() {
 	clear();
-    Conio::initTermios(1);
-    Conio::resetTermios();
-    system("stty echo cooked");
+	Conio::initTermios(1);
+	Conio::resetTermios();
+	system("stty echo cooked");
 }
 
 // Using the info given, saved the users details for when we connect
@@ -104,6 +104,8 @@ void IRC_Client::start_connection() {
 	
 	// Free the server information, we don't need it anymore.
 	freeaddrinfo(servinfo);
+	
+	// Create the thread that will handle messages from the server
 	pthread_create(&thread, NULL, &handle_recv_thread_helper, this);
 
 	// Send the first authentication messages to the server.
@@ -133,10 +135,8 @@ int IRC_Client::run() {
 		return EXIT_FAILURE;
 	}
 	
-	// Read the user input.
-	read();
-	
-	while (is_connected()) {
+	// Loop until we can't get anymore input
+	while (is_connected() && read()) {
 		// Check if the user input is ready to be processed.
 		if (string_is_ready) {
 			if (!external_command.empty()) {
@@ -189,9 +189,6 @@ int IRC_Client::run() {
 				send_data(current_str.c_str());
 			}
 		}
-
-		// Read the user input.
-		read();
 	}
 	
 	return EXIT_SUCCESS;
@@ -217,7 +214,14 @@ void IRC_Client::rewrite() {
 }
 
 // Read input from stdin
-void IRC_Client::read() {
+bool IRC_Client::read() {
+	// Check if we're connected to the server or not
+	if(!is_connected())
+	{
+		cerr << "Error: \"IRC_Client::read() not connected\"\n";
+		return false;
+	}
+	
 	has_started = true;
 	char curr_char;
 
@@ -235,7 +239,7 @@ void IRC_Client::read() {
 	// TODO: Implement nick auto-completion when the user hits tab.
 	if (curr_char == 3) {
 		// Control + C
-		exit(0);
+		return false;
 	} else if (curr_char == 127) {
 		// Backspace
 		if (current_str != "") {
@@ -297,6 +301,8 @@ void IRC_Client::read() {
 			string_is_ready = true;
 		}
 	}
+	
+	return true;
 }
 
 // Evaluate the input to see what type of message it is

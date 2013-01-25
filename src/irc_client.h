@@ -20,6 +20,7 @@ public:
 	IRC_Client(std::string _server, std::string _port = "6667",
 		std::string _server_pass = "");
 	
+	// Destructor
 	~IRC_Client();
 	
 	// Using the info given, saved the users details for when we connect
@@ -65,9 +66,8 @@ public:
 	std::string realname;
 	std::string nickserv;
 	
-	// Current message being processed
+	// Current message being processed and a vector of all messages
 	Message message;
-	
 	std::vector<Message> log;
 	
 	bool has_started;
@@ -80,21 +80,30 @@ public:
 	std::vector<std::string> history;
 
 private:
-	// Helper functions sending/receiving messages from the IRC server
-	bool send_data(std::string data);
-	void message_handler(const char *buffer);
-	void *handle_recv(void);
-	static void *handle_recv_thread_helper(void *context);
+	////////////////////////////////////////////////////////////////////////////
+	//	Helper functions for sending/receiving messages from the IRC server
+	////////////////////////////////////////////////////////////////////////////
 	
-	// REPL functions for saving the input from the user to recall later on
+	// Send the data string to the server and return the number of bytes sent
+	int send_data(std::string data);
+	
+	// Parse and process the given string buffer
+	bool message_handler(const char *buffer);
+	
+	void * handle_recv(void);
+	static void * handle_recv_thread_helper(void *context);
+	
+	// History functions for saving the input from the user to recall later on
 	void add_history();
 	void back_history();
 	void forward_history();
 	
-	int sd;  // socket_descriptor
+	// socket file descriptor for the IRC server
+	int sd;
 	
 	// True if we are connected
 	bool connected;
+	
 	std::vector<std::string> autojoin_channels;
 };
 

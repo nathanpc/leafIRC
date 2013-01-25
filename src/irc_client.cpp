@@ -53,8 +53,7 @@ IRC_Client::IRC_Client(string _server, string _port, string _server_password) {
 	history_current_position = 0;
 }
 
-IRC_Client::~IRC_Client()
-{
+IRC_Client::~IRC_Client() {
 	clear();
     Conio::initTermios(1);
     Conio::resetTermios();
@@ -99,9 +98,10 @@ void IRC_Client::start_connection() {
 		close(sd);
 		perror("connect");
 	}
-
+	
+	// We have connected to the server
 	connected = true;
-
+	
 	// Free the server information, we don't need it anymore.
 	freeaddrinfo(servinfo);
 	pthread_create(&thread, NULL, &handle_recv_thread_helper, this);
@@ -204,155 +204,156 @@ bool IRC_Client::is_connected() const {
 
 // Clear the prompt from the console
 void IRC_Client::clear() {
-    int curr_input_length = current_str.length() + input_marker.length();
+	int curr_input_length = current_str.length() + input_marker.length();
 
-    for (int i = 0; i < curr_input_length; i++) {
-        printf("\b \b");
-    }
+	for (int i = 0; i < curr_input_length; i++) {
+		printf("\b \b");
+	}
 }
 
 // Write a prompt to the console
 void IRC_Client::rewrite() {
-    cout << input_marker + current_str << flush;
+	cout << input_marker + current_str << flush;
 }
 
 // Read input from stdin
 void IRC_Client::read() {
-    has_started = true;
-    char curr_char;
+	has_started = true;
+	char curr_char;
 
-    if (string_is_ready) {
-        string_is_ready = false;
-        current_str = "";
-        external_command.clear();
-
-        cout << input_marker << flush;
-    }
-
-    //printf("%d\n", curr_char = Conio::getche());
-    curr_char = Conio::getch();
-
-    // TODO: Implement nick auto-completion when the user hits tab.
-    if (curr_char == 3) {
-        // Control + C
-        exit(0);
-    } else if (curr_char == 127) {
-        // Backspace
-        if (current_str != "") {
-            current_str = current_str.substr(0, current_str.length() - 1);
-            printf("\b \b");
-        }
-    } else if (curr_char == 27) {
-        if (Conio::getche() == 91) {
-            // Arrow keys
-            curr_char = Conio::getche();
-            if (curr_char == 65) {
-                // Up
-                if (history_current_position < history.size()) {
-                    clear();
-
-                    current_str = history.at(history.size() - 1 - history_current_position);
-                    history_current_position++;
-
-                    rewrite();
-                }
-            } else if (curr_char == 66) {
-                // Down
-                if (history_current_position != 0) {
-                    clear();
-
-                    if (history_current_position - 1 > 0) {
-                        current_str = history.at(history.size() + 1 - history_current_position);
-                        history_current_position--;
-                    } else {
-                        history_current_position = 0;
-                        current_str = "";
-                    }
-
-                    rewrite();
-                }
-            }
-        }
-    } else if (curr_char != 10) {
-        // Others
-        char *char_str = new char[2];
-        char_str[0] = curr_char;
-        char_str[1] = '\0';
-
-        current_str.append(char_str);
-        printf("%c", curr_char);
-
-        delete [] char_str;
-    } else {
-        // Return
-        if (current_str != "") {
-            add_history();
-            history_current_position = 0;
-
-            if (eval()) {
-                current_str.append("\r\n");
-            }
-
-            printf("\n");
-            string_is_ready = true;
-        }
-    }
+	if (string_is_ready) {
+		string_is_ready = false;
+		current_str = "";
+		external_command.clear();
+		
+		cout << input_marker << flush;
+	}
+	
+	//printf("%d\n", curr_char = Conio::getche());
+	curr_char = Conio::getch();
+	
+	// TODO: Implement nick auto-completion when the user hits tab.
+	if (curr_char == 3) {
+		// Control + C
+		exit(0);
+	} else if (curr_char == 127) {
+		// Backspace
+		if (current_str != "") {
+			current_str = current_str.substr(0, current_str.length() - 1);
+			printf("\b \b");
+		}
+	} else if (curr_char == 27) {
+		if (Conio::getche() == 91) {
+			// Arrow keys
+			curr_char = Conio::getche();
+			if (curr_char == 65) {
+				// Up
+				if (history_current_position < history.size()) {
+					clear();
+					
+                    current_str = history.at(history.size() - 1 -
+						history_current_position);
+					history_current_position++;
+					
+					rewrite();
+				}
+			} else if (curr_char == 66) {
+				// Down
+				if (history_current_position != 0) {
+					clear();
+					
+					if (history_current_position - 1 > 0) {
+						current_str = history.at(history.size() + 1 -
+						history_current_position);
+						history_current_position--;
+					} else {
+						history_current_position = 0;
+						current_str = "";
+					}
+					
+					rewrite();
+				}
+			}
+		}
+	} else if (curr_char != 10) {
+		// Others
+		char char_str[2];
+		char_str[0] = curr_char;
+		char_str[1] = '\0';
+		
+		current_str.append(char_str);
+		printf("%c", curr_char);
+	} else {
+		// Return
+		if (current_str != "") {
+			add_history();
+			history_current_position = 0;
+			
+			if (eval()) {
+				current_str.append("\r\n");
+			}
+			
+			printf("\n");
+			string_is_ready = true;
+		}
+	}
 }
 
 // Evaluate the input to see what type of message it is
 bool IRC_Client::eval() {
-    if (current_str != "" && current_str.at(0) == '/') {
-        // Gets the string between "/" and the first space.
-        string command = current_str.substr(1, current_str.find(" ") - 1);
-
-        if (command == "switch") {
-            // Switch the current channel.
-            string switch_channel = current_str.substr(current_str.find(" ") + 1);
-
-            if (switch_channel.at(0) == '#') {
-                switch_channel = switch_channel.substr(1);
-            }
-
-            external_command.push_back("switch");
-            external_command.push_back(switch_channel);
-        } else if (command == "msg") {
-            // A better PRIVMSG.
-            external_command.push_back("msg");
-
-            // Get the message receiver.
-            string tmp_str = current_str.substr(current_str.find(" ") + 1);
-            external_command.push_back(tmp_str.substr(0, tmp_str.find(" ")));
-
-            // Get the message.
-            tmp_str = tmp_str.substr(tmp_str.find(" ") + 1);
-            external_command.push_back(tmp_str);
-        } else if (command == "me") {
-            // ACTIONs!
-            external_command.push_back("me");
-            
-            // Get the message.
-            string action_msg = current_str.substr(current_str.find(" ") + 1);
-            external_command.push_back(action_msg);
-        } else {
-            // Common IRC command.
-            current_str = current_str.substr(1);
-            return true;
-        }
-
-        return false;
-    } else {
-        // Message
-        external_command.push_back("message");
-
-        return true;
-    }
+	if (current_str != "" && current_str.at(0) == '/') {
+		// Gets the string between "/" and the first space.
+		string command = current_str.substr(1, current_str.find(" ") - 1);
+	
+		if (command == "switch") {
+			// Switch the current channel.
+			string switch_channel = current_str.substr(current_str.find(" ") + 1);
+			
+			if (switch_channel.at(0) == '#') {
+				switch_channel = switch_channel.substr(1);
+			}
+			
+			external_command.push_back("switch");
+			external_command.push_back(switch_channel);
+		} else if (command == "msg") {
+			// A better PRIVMSG.
+			external_command.push_back("msg");
+			
+			// Get the message receiver.
+			string tmp_str = current_str.substr(current_str.find(" ") + 1);
+			external_command.push_back(tmp_str.substr(0, tmp_str.find(" ")));
+			
+			// Get the message.
+			tmp_str = tmp_str.substr(tmp_str.find(" ") + 1);
+			external_command.push_back(tmp_str);
+		} else if (command == "me") {
+			// ACTIONs!
+			external_command.push_back("me");
+			
+			// Get the message.
+			string action_msg = current_str.substr(current_str.find(" ") + 1);
+			external_command.push_back(action_msg);
+		} else {
+			// Common IRC command.
+			current_str = current_str.substr(1);
+			return true;
+		}
+		
+		return false;
+	} else {
+		// Message
+		external_command.push_back("message");
+		
+		return true;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //		Helper functions sending/receiving messages from the IRC server
 ////////////////////////////////////////////////////////////////////////////////
 
-bool IRC_Client::send_data(string data) {
+// Send the data string to the server and return the number of bytes sent
+int IRC_Client::send_data(string data) {
 	const char *buffer = data.c_str();
 	int len = strlen(buffer);
 	int bytes_sent;
@@ -365,11 +366,12 @@ bool IRC_Client::send_data(string data) {
 	return bytes_sent;
 }
 
-void IRC_Client::message_handler(const char *buffer) {
+// Parse and process the given string buffer
+bool IRC_Client::message_handler(const char *buffer) {
 	// Check if the buffer is empty
 	if (strlen(buffer) == 0) {
 		cerr << "Error: \"buffer is empty\"\n";
-		exit(1);
+		return false;
 	}
 	
 	message = Message(buffer);
@@ -381,10 +383,48 @@ void IRC_Client::message_handler(const char *buffer) {
 		// There is an assumption here that
 		// message.get_command_args() is not empty
 		IRC_Client::send_data("PONG " + message.get_command_args().at(0) + "\r\n");
+	} else if(message.get_command() == "ERROR") {
+		// Clear the prompt from the console
+		clear();
+		
+		// Get the argument(s) to the error message
+		vector<string> args = message.get_command_args();
+		
+		// Check if there are no arguments
+		if(args.empty())
+		{
+			cerr << "Error: \"no arguments with error\"\n";
+			return false;
+		}
+		// Make sure there is only one argument
+		else if(args.size() == 1)
+		{
+			// Check if the string begins with "Closing Link:"
+			if(args.back().substr(0, 13) == "Closing Link:")
+			{
+				// Also check if "Quit:" is in the string
+				if(args.back().find("Quit:") != string::npos)
+				{
+					cerr << "\nGoodbye!\n";
+					return true;
+				}
+				
+				cerr << "Error: \"'Quit:' not found in error message\"\n";
+				return false;
+			}
+			
+			// Handle error message with one argument
+			cerr << "Error: \"" << args.back() << "\"\n";
+			return false;
+		}
+		
+		// Handle error with multiple arguments
+		cerr << "Error: \"unknown/unhandled error message\"\n";
+		return false;
 	} else {
 		// Messages that need to be echoed.
 		Pretty_Print_Message pretty_print(buffer);
-		string str_buffer = pretty_print.generate(message, channels);
+		string str = pretty_print.generate(message, channels);
 
 		if (message.get_command() == "001") {
 			// Just connected to the server.
@@ -414,9 +454,9 @@ void IRC_Client::message_handler(const char *buffer) {
 				#ifdef DEBUG
 					cout << "\n" << message << "\n";
 				#else
-					if (str_buffer != "") {
-						str_buffer = time_str + str_buffer;
-						cout << str_buffer;
+					if (str != "") {
+						str = time_str + str;
+						cout << str;
 					}
 				#endif
 			} else {
@@ -424,18 +464,20 @@ void IRC_Client::message_handler(const char *buffer) {
 				#ifdef DEBUG
 					cout << message << "\n";
 				#else
-					if (str_buffer != "") {
-						str_buffer = time_str + str_buffer;
-						cout << "\r" << str_buffer;
+					if (str != "") {
+						str = time_str + str;
+						cout << "\r" << str;
 					}
 				#endif
 				rewrite();
 			}
 		}
 	}
+	
+	return true;
 }
 
-void *IRC_Client::handle_recv(void) {
+void * IRC_Client::handle_recv(void) {
 	// recv some data.
 	int numbytes;
 	char buffer[MAXDATASIZE];
@@ -458,7 +500,11 @@ void *IRC_Client::handle_recv(void) {
 			sbuf.erase(0, msg.size());
 
 			// Handle the received message
-			message_handler(msg.c_str());
+			if(!message_handler(msg.c_str()))
+			{
+				connected = false;
+				return NULL;
+			}
 		}
 	}
 
@@ -469,7 +515,6 @@ void *IRC_Client::handle_recv(void) {
 	}
 
 	connected = false;
-
 	return NULL;
 }
 

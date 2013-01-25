@@ -15,8 +15,8 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        cerr << "Usage: leaf server_alias|server_url" << endl;
+    if (argc == 2 && string(argv[1]) == "--help") {
+        cerr << "Usage: leaf server_alias|server_url\n";
         return 1;
     }
 

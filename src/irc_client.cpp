@@ -48,9 +48,6 @@ IRC_Client::IRC_Client(string _server, string _port, string _server_password) {
 	string_is_ready = false;
 	input_marker = string(BOLDCYAN) + ":: " + string(RESET);
 	history_current_position = 0;has_started = false;
-	string_is_ready = false;
-	input_marker = string(BOLDCYAN) + ":: " + string(RESET);
-	history_current_position = 0;
 }
 
 IRC_Client::~IRC_Client() {
@@ -61,8 +58,7 @@ IRC_Client::~IRC_Client() {
 }
 
 // Using the info given, saved the users details for when we connect
-void
-IRC_Client::setup_user(string _nick, string _username, string _realname,
+void IRC_Client::setup_user(string _nick, string _username, string _realname,
 						string _nickserv, vector<string> _autojoin_channels) {
 	nick = _nick;
 	username = _username;

@@ -206,14 +206,19 @@ void IRC_Client::clear() {
 
 // Write a prompt to the console
 void IRC_Client::rewrite() {
+	if (channels.list.size() != 0) {
+		// Print the marker with the current channel.
+		input_marker = string(BOLDCYAN) + '#' + channels.list.at(channels.current)
+			+ ' ' + string(":: ") + RESET;
+	}
+
 	cout << input_marker + current_str << flush;
 }
 
 // Read input from stdin
 bool IRC_Client::read() {
 	// Check if we're connected to the server or not
-	if(!is_connected())
-	{
+	if (!is_connected()) {
 		cerr << "Error: \"IRC_Client::read() not connected\"\n";
 		return false;
 	}

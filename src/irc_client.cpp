@@ -38,6 +38,14 @@ using namespace std;
 //				Public member functions for the IRC_Client class
 ////////////////////////////////////////////////////////////////////////////////
 
+
+/**
+ *  Constructs IRC_Client.
+ *
+ *  \param _server IRC server address.
+ *  \param _port IRC server port.
+ *  \param _server_password IRC server password.
+ */
 IRC_Client::IRC_Client(string _server, string _port, string _server_password) {
 	server = _server;
 	port = _port;
@@ -50,6 +58,10 @@ IRC_Client::IRC_Client(string _server, string _port, string _server_password) {
 	history_current_position = 0;has_started = false;
 }
 
+
+/**
+ *  Destructs IRC_Client.
+ */
 IRC_Client::~IRC_Client() {
 	clear();
 	Conio::initTermios(1);
@@ -57,7 +69,15 @@ IRC_Client::~IRC_Client() {
 	system("stty echo cooked");
 }
 
-// Using the info given, saved the users details for when we connect
+/**
+ * Populate the user-related variables.
+ *
+ * \param _nick User's nickname.
+ * \param _username User's username.
+ * \param _realname User's real name.
+ * \param _nickserv NickServ password for authentication.
+ * \param _autojoin_channels Channels to join on connect.
+ */
 void IRC_Client::setup_user(string _nick, string _username, string _realname,
 						string _nickserv, vector<string> _autojoin_channels) {
 	nick = _nick;
@@ -67,7 +87,9 @@ void IRC_Client::setup_user(string _nick, string _username, string _realname,
 	autojoin_channels = _autojoin_channels;
 }
 
-// Connect to the IRC server using the string in the server member variable
+/**
+ * Connect to the IRC server using the string in the server member variable.
+ */
 void IRC_Client::start_connection() {
 	struct addrinfo hints, *servinfo;
 
@@ -109,7 +131,9 @@ void IRC_Client::start_connection() {
 	send_data("USER " + username + " 0 * :" + realname + "\r\n");
 }
 
-// If connected, close the connection to the server
+/**
+ * Closes the connection if it's connected.
+ */
 void IRC_Client::close_connection() {
 	// First check if we are already connected
 	if (is_connected()) {
@@ -123,7 +147,11 @@ void IRC_Client::close_connection() {
 	}
 }
 
-// Run the main loop for the client and return 0 on success, -1 on failure
+/**
+ * Run the main loop for the client.
+ *
+ * \return 0 on success, -1 on failure.
+ */
 int IRC_Client::run() {
 	// Check if we're not connected
 	if (!is_connected()) {
@@ -190,12 +218,18 @@ int IRC_Client::run() {
 	return EXIT_SUCCESS;
 }
 
-// Return true if the client is connected to a server
+/**
+ * Checks if is connected to a server.
+ *
+ * \return true if the client is connected to a server
+ */
 bool IRC_Client::is_connected() const {
 	return connected;
 }
 
-// Clear the prompt from the console
+/**
+ * Clear the prompt from the console.
+ */
 void IRC_Client::clear() {
 	int curr_input_length = current_str.length() + input_marker.length();
 
@@ -204,7 +238,9 @@ void IRC_Client::clear() {
 	}
 }
 
-// Write a prompt to the console
+/**
+ * Write a prompt to the console.
+ */
 void IRC_Client::rewrite() {
 	if (channels.list.size() != 0) {
 		// Print the marker with the current channel.
@@ -215,7 +251,11 @@ void IRC_Client::rewrite() {
 	cout << input_marker + current_str << flush;
 }
 
-// Read input from stdin
+/**
+ * Read input from stdin.
+ *
+ * \return true if the input is ok, false if input is something like a Ctrl+C.
+ */
 bool IRC_Client::read() {
 	// Check if we're connected to the server or not
 	if (!is_connected()) {
@@ -306,7 +346,11 @@ bool IRC_Client::read() {
 	return true;
 }
 
-// Evaluate the input to see what type of message it is
+/**
+ * Evaluate the input to see what type of message it is.
+ *
+ * \return true if the input ONLY needs \r\n to be appended to the end (no more parsing).
+ */
 bool IRC_Client::eval() {
 	if (current_str != "" && current_str.at(0) == '/') {
 		// Gets the string between "/" and the first space.
@@ -359,7 +403,11 @@ bool IRC_Client::eval() {
 //		Helper functions sending/receiving messages from the IRC server
 ////////////////////////////////////////////////////////////////////////////////
 
-// Send the data string to the server and return the number of bytes sent
+/**
+ * Send the data string to the server.
+ *
+ * \return Number of bytes sent.
+ */
 int IRC_Client::send_data(string data) {
 	const char *buffer = data.c_str();
 	int len = strlen(buffer);
@@ -373,7 +421,11 @@ int IRC_Client::send_data(string data) {
 	return bytes_sent;
 }
 
-// Parse and process the given string buffer
+/**
+ * Parse and process the given string buffer.
+ *
+ * \return true if no errors were thrown.
+ */
 bool IRC_Client::message_handler(const char *buffer) {
 	// Check if the buffer is empty
 	if (strlen(buffer) == 0) {
@@ -398,20 +450,15 @@ bool IRC_Client::message_handler(const char *buffer) {
 		vector<string> args = message.get_command_args();
 		
 		// Check if there are no arguments
-		if(args.empty())
-		{
+		if (args.empty()) {
 			cerr << "Error: \"no arguments with error\"\n";
 			return false;
-		}
-		// Make sure there is only one argument
-		else if(args.size() == 1)
-		{
+		} else if (args.size() == 1) {
+			// Make sure there is only one argument
 			// Check if the string begins with "Closing Link:"
-			if(args.back().substr(0, 13) == "Closing Link:")
-			{
+			if (args.back().substr(0, 13) == "Closing Link:") {
 				// Also check if "Quit:" is in the string
-				if(args.back().find("Quit:") != string::npos)
-				{
+				if (args.back().find("Quit:") != string::npos) {
 					cerr << "\nGoodbye!\n";
 					return true;
 				}
@@ -484,7 +531,10 @@ bool IRC_Client::message_handler(const char *buffer) {
 	return true;
 }
 
-void * IRC_Client::handle_recv(void) {
+/**
+ * Handles the information that was received from the server.
+ */
+void *IRC_Client::handle_recv(void) {
 	// recv some data.
 	int numbytes;
 	char buffer[MAXDATASIZE];
@@ -525,7 +575,10 @@ void * IRC_Client::handle_recv(void) {
 	return NULL;
 }
 
-void * IRC_Client::handle_recv_thread_helper(void *context) {
+/**
+ * Just a little hack to make pthread work with a C++ class.
+ */
+void *IRC_Client::handle_recv_thread_helper(void *context) {
 	return ((IRC_Client *)context)->handle_recv();
 }
 
@@ -533,6 +586,9 @@ void * IRC_Client::handle_recv_thread_helper(void *context) {
 //	History functions for saving the input from the user to recall later on
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Add the current input to the input history.
+ */
 void IRC_Client::add_history() {
 	if (history.size() >= 100) {
 		history.erase(history.begin());
@@ -541,6 +597,9 @@ void IRC_Client::add_history() {
 	history.push_back(current_str);
 }
 
+/**
+ * Goes back in the history list and populates the input field.
+ */
 void IRC_Client::back_history() {
 	if (history_current_position < history.size()) {
 		clear();
@@ -552,6 +611,9 @@ void IRC_Client::back_history() {
 	}
 }
 
+/**
+ * Goes forward in the history list and populates the input field.
+ */
 void IRC_Client::forward_history() {
 	if (history_current_position != 0) {
 		clear();

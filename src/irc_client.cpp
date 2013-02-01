@@ -270,8 +270,8 @@ bool IRC_Client::read() {
 		string_is_ready = false;
 		current_str = "";
 		external_command.clear();
-		
-		cout << input_marker << flush;
+
+		rewrite();
 	}
 	
 	//printf("%d\n", curr_char = Conio::getche());

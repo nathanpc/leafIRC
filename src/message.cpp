@@ -15,8 +15,16 @@
 #include "message.h"
 using namespace std;
 
+/**
+ * Empty Message constructor.
+ */
 Message::Message() {}
 
+/**
+ * Message constructor.
+ *
+ * \param s A message string.
+ */
 Message::Message(const char* s) {
 	if ((raw = _raw = strip_end_newline(s)).empty()) {
 		cerr << "Message::Message() \"message is empty\"\n";
@@ -26,22 +34,34 @@ Message::Message(const char* s) {
 	parse();
 }
 
-Message::Message(const Message& m)
-{
+/**
+ * Message constructed from another Message.
+ *
+ * \param m Pointer to a Message
+ */
+Message::Message(const Message& m) {
 	copy(m);
 }
 
-Message& Message::operator=(const Message& m)
-{
+/**
+ * Set the Message
+ *
+ * \param m Pointer to a Message.
+ * \return This.
+ */
+Message& Message::operator=(const Message& m) {
 	copy(m);
 	return *this;
 }
 
-void Message::copy(const Message& m)
-{
+/**
+ * Copy the Message.
+ *
+ * \param m Pointer to a message
+ */
+void Message::copy(const Message& m) {
 	// Check for self-assignment
-	if(this != &m)
-	{
+	if (this != &m) {
 		_raw		= m._raw;
 		raw			= m.raw;
 		server		= m.server;
@@ -55,6 +75,12 @@ void Message::copy(const Message& m)
 	}
 }
 
+/**
+ * Parse the raw string and check if it's actually multiple messages.
+ *
+ * \param s Raw message string.
+ * \return A message.
+ */
 static string changeNewlines(const string& s) {
 	if (s.empty()) {
 		return s;
@@ -74,6 +100,13 @@ static string changeNewlines(const string& s) {
 	return retval;
 }
 
+/**
+ * Overrides the << operator.
+ *
+ * \param out Pointer to a ostream.
+ * \param m Pointer to a Message.
+ * \return The final ostream.
+ */
 ostream& operator<<(ostream& out, const Message& m) {
     #ifdef DEBUG
 	    out << "\nraw = " << changeNewlines(m._raw) << "\n";
@@ -102,6 +135,11 @@ ostream& operator<<(ostream& out, const Message& m) {
 	return out;
 }
 
+/**
+ * Parse the message and populate the internal variables.
+ *
+ * \return Always true.
+ */
 bool Message::parse() {
 	// Check when parsing for the server, if the message begins with NOTICE
 	if (parse_server()) {
@@ -116,6 +154,11 @@ bool Message::parse() {
 	return true;
 }
 
+/**
+ * Parse the server address from the raw message.
+ *
+ * \return true if we could parse a server address, false if we couldn't.
+ */
 bool Message::parse_server() {
 	// Validate the raw string before we start parsing.
 	// It must not be empty and the first char should be a colon ':'
@@ -155,6 +198,11 @@ bool Message::parse_server() {
 	return ans;
 }
 
+/**
+ * Parse my own nickname from the raw message.
+ *
+ * \return Nickname.
+ */
 string Message::parse_nickname() {
 	size_t pos;
 	
@@ -170,6 +218,11 @@ string Message::parse_nickname() {
 	return nickname;
 }
 
+/**
+ * Parse my own username from the raw message.
+ *
+ * \return Username.
+ */
 string Message::parse_username() {
 	size_t pos;
 	
@@ -185,6 +238,11 @@ string Message::parse_username() {
 	return username;
 }
 
+/**
+ * Parse my own hostname from the raw message.
+ *
+ * \return Hostname.
+ */
 string Message::parse_hostname() {
 	size_t pos;
 	
@@ -200,6 +258,11 @@ string Message::parse_hostname() {
 	return hostname;
 }
 
+/**
+ * Parse the command from the raw message.
+ *
+ * \return Command.
+ */
 string Message::parse_command() {
 	size_t pos = raw.find(' ');
 	
@@ -211,6 +274,11 @@ string Message::parse_command() {
 	return cmd;
 }
 
+/**
+ * Parse arguments from the raw message.
+ *
+ * \return String of arguments.
+ */
 string Message::parse_arguments() {
 	// Check if we've already parsed the arguments
     if (!raw.empty()) {
@@ -242,34 +310,74 @@ string Message::parse_arguments() {
 	return args.back();
 }
 
+/**
+ * Remove the final newlines from the message.
+ *
+ * \return Message without the final newlines.
+ */
 string Message::strip_end_newline(string line) {
     return line.erase(line.find("\r\n"), 2);
 }
 
+/**
+ * Server getter.
+ *
+ * \return Server.
+ */
 string Message::get_server() {
 	return server;
 }
 
+/**
+ * Nickname getter.
+ *
+ * \return Nickname.
+ */
 string Message::get_nickname() {
 	return nickname;
 }
 
+/**
+ * Username getter.
+ *
+ * \return Username.
+ */
 string Message::get_username() {
 	return username;
 }
 
+/**
+ * Hostname getter.
+ *
+ * \return Hostname.
+ */
 string Message::get_hostname() {
 	return hostname;
 }
 
+/**
+ * Command getter.
+ *
+ * \return Command.
+ */
 string Message::get_command() {
     return cmd;
 }
 
+/**
+ * Command arguments getter.
+ *
+ * \return Command arguments.
+ */
 vector<string> Message::get_command_args() {
 	return args;
 }
 
+/**
+ * Reply code getter.
+ *
+ * \return Reply code.
+ */
 int Message::get_reply_code() {
     return atoi(cmd.c_str());
 }

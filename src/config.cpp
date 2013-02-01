@@ -17,6 +17,9 @@
 #include "locations.h"
 using namespace std;
 
+/**
+ * Constructor for the Config.
+ */
 Config::Config() {
     config_dir = expand_path(HOME_DIR);
     history_dir = config_dir + string(HISTORY_DIR);
@@ -25,6 +28,12 @@ Config::Config() {
     clear_cache();
 }
 
+/**
+ * Gets the absolute path from a relative path (expand it).
+ *
+ * \param directory Relative path.
+ * \return Absolute path.
+ */
 string Config::expand_path(const char *directory) {
     wordexp_t exp_result;
 	wordexp(directory, &exp_result, 0);
@@ -32,11 +41,22 @@ string Config::expand_path(const char *directory) {
     return string(exp_result.we_wordv[0]);
 }
 
+/**
+ * Check if a directory exists.
+ *
+ * \param directory A directory.
+ * \return true if the directory exists.
+ */
 bool Config::directory_exists(const char *directory) {
     struct stat st;
     return !stat(directory, &st);
 }
 
+/**
+ * Make a directory if it doesn't exist.
+ *
+ * \param directory A directory.
+ */
 void Config::build_dir(const char *directory) {
     if (!directory_exists(directory)) {
         int dir = mkdir(directory, S_IRWXU | S_IRGRP);
@@ -46,6 +66,11 @@ void Config::build_dir(const char *directory) {
     }
 }
 
+/**
+ * Check if all the required directories exist.
+ *
+ * \param optional_dir A secondary directory to check for.
+ */
 void Config::check_dirs(string optional_dir) {
     build_dir(config_dir.c_str());
 
@@ -54,12 +79,22 @@ void Config::check_dirs(string optional_dir) {
     }
 }
 
+/**
+ * Remove the cache directory.
+ */
 void Config::clear_cache() {
     if (directory_exists(history_dir.c_str())) {
         system(string("rm -r " + history_dir).c_str());
     }
 }
 
+/**
+ * Check if a character is a quote. (used for string::erase)
+ *
+ * \see clean_config_string
+ * \param c Character to be checked.
+ * \return true if the character is a quote.
+ */
 bool is_quote(char c) {
     switch(c) {
         case '"':
@@ -69,11 +104,20 @@ bool is_quote(char c) {
     }
 }
 
+/**
+ * Remove any quotes from a configuration string.
+ *
+ * \param str String to be cleaned.
+ * \return Clean string.
+ */
 string clean_config_string(string str) {
     str.erase(remove_if(str.begin(), str.end(), &is_quote), str.end());
     return str;
 }
 
+/**
+ * Read the general config file. (leaf.conf)
+ */
 void Config::read_general_config_file() {
     string config_file = config_dir + "/leaf.conf";
     INIReader reader = INIReader(config_file);
@@ -95,6 +139,11 @@ void Config::read_general_config_file() {
     user_password = clean_config_string(user_password);
 }
 
+/**
+ * Read the user config file. (user.conf)
+ *
+ * \param server_alias Server alias.
+ */
 void Config::read_user_config_file(const char *server_alias) {
     string config_file = config_dir + "/user.conf";
     INIReader reader = INIReader(config_file);
@@ -128,10 +177,23 @@ void Config::read_user_config_file(const char *server_alias) {
     }
 }
 
+/**
+ * Load the user configuration based on the user's alias.
+ *
+ * \see read_user_config_file
+ * \param server_alias Server alias.
+ */
 void Config::load_user_config(const char *server_alias) {
     read_user_config_file(server_alias);
 }
 
+/**
+ * Builds the cache filename.
+ *
+ * \param channel_name Channel to cache.
+ * \param index Channel's index.
+ * \return Cache filename.
+ */
 string Config::cache_filename(string channel_name, unsigned int index) {
     ostringstream stream;
     stream << history_dir << "/" << index << "_" << channel_name << ".log";
@@ -139,6 +201,11 @@ string Config::cache_filename(string channel_name, unsigned int index) {
     return stream.str();
 }
 
+/**
+ * Populate the channels vector with the string from the config file.
+ *
+ * \param channels_str String from the configuration file.
+ */
 void Config::populate_channels_vector(string channels_str) {
     while (channels_str.find(",") != string::npos) {
         size_t pos = channels_str.find(",");

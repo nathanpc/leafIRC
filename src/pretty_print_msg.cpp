@@ -15,11 +15,23 @@
 #include "pretty_print_msg.h"
 using namespace std;
 
+/**
+ * Constructor for the class.
+ *
+ * \param _buffer Message string.
+ */
 Pretty_Print_Message::Pretty_Print_Message(const char *_buffer) {
     buffer = _buffer;
     echo = true;
 }
 
+/**
+ * Create a color string based on the string's letters.
+ *
+ * \param nickname Nickname to be colorized.
+ * \param include_msg Include the whole message with it.
+ * \return Colorized string.
+ */
 string Pretty_Print_Message::color_string(string nickname, bool include_msg) {
     // Generate a color for the nick based on its letters.
     string chars = " abcdefghijklmnopqrstuvwxyz1234567890_-";
@@ -49,6 +61,13 @@ string Pretty_Print_Message::color_string(string nickname, bool include_msg) {
     }
 }
 
+/**
+ * Generate the pretty formatted string based on the message.
+ *
+ * \param message Pointer to a Message class.
+ * \param channels Pointer to a Channels class.
+ * \return Prettyfied string.
+ */
 string Pretty_Print_Message::generate(Message &message, Channels &channels) {
     // Parse and return a better and more human-readable message.
     string str_buffer(buffer);
@@ -162,6 +181,11 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
     return str_buffer;
 }
 
+/**
+ * Check if the message should be echoed.
+ *
+ * \return true if the message should be echoed.
+ */
 bool Pretty_Print_Message::echo_message() {
     return echo;
 }

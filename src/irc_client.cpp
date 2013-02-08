@@ -38,7 +38,6 @@ using namespace std;
 //				Public member functions for the IRC_Client class
 ////////////////////////////////////////////////////////////////////////////////
 
-
 /**
  *  Constructs IRC_Client.
  *
@@ -63,6 +62,10 @@ IRC_Client::IRC_Client(string _server, string _port, string _server_password) {
  *  Destructs IRC_Client.
  */
 IRC_Client::~IRC_Client() {
+	clean_mess();
+}
+
+void IRC_Client::clean_mess() {
 	clear();
 	Conio::initTermios(1);
 	Conio::resetTermios();
@@ -442,7 +445,7 @@ bool IRC_Client::message_handler(const char *buffer) {
 		// There is an assumption here that
 		// message.get_command_args() is not empty
 		IRC_Client::send_data("PONG " + message.get_command_args().at(0) + "\r\n");
-	} else if(message.get_command() == "ERROR") {
+	} else if (message.get_command() == "ERROR") {
 		// Clear the prompt from the console
 		clear();
 		
@@ -469,6 +472,12 @@ bool IRC_Client::message_handler(const char *buffer) {
 			
 			// Handle error message with one argument
 			cerr << "Error: \"" << args.back() << "\"\n";
+			if (args.back() == "Closing connection") {
+				// Connection closed.
+				clean_mess();
+				exit(0);
+			}
+
 			return false;
 		}
 		
@@ -557,8 +566,7 @@ void *IRC_Client::handle_recv(void) {
 			sbuf.erase(0, msg.size());
 
 			// Handle the received message
-			if(!message_handler(msg.c_str()))
-			{
+			if (!message_handler(msg.c_str())) {
 				connected = false;
 				return NULL;
 			}

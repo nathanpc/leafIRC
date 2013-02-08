@@ -84,14 +84,17 @@ private:
 	//	Helper functions for sending/receiving messages from the IRC server
 	////////////////////////////////////////////////////////////////////////////
 	
+	// Cleans the mess.
+	void clean_mess();
+
 	// Send the data string to the server and return the number of bytes sent
 	int send_data(std::string data);
 	
 	// Parse and process the given string buffer
 	bool message_handler(const char *buffer);
 	
-	void * handle_recv(void);
-	static void * handle_recv_thread_helper(void *context);
+	void *handle_recv(void);
+	static void *handle_recv_thread_helper(void *context);
 	
 	// History functions for saving the input from the user to recall later on
 	void add_history();

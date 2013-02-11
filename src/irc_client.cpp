@@ -414,9 +414,9 @@ bool IRC_Client::eval() {
 int IRC_Client::send_data(string data) {
 	const char *buffer = data.c_str();
 	int len = strlen(buffer);
-	int bytes_sent;
+	int bytes_sent = send(sd, buffer, len, 0);
 
-	if ((bytes_sent = send(sd, buffer, len, 0)) == -1) {
+	if (bytes_sent == -1) {
 		perror("IRC_Client::send_data(): send");
 		exit(EXIT_FAILURE);
 	}

@@ -190,8 +190,7 @@ int IRC_Client::run() {
 						channels.list.at(channels.current) + " :" +
 						current_str;
 
-						// TODO: Get nick.
-						string cache_msg = string(BOLDWHITE) + "<Me> " +
+						string cache_msg = string(BOLDWHITE) + "<" + nick + "> " +
 						string(RESET) + current_str;
 						channels.cache(channels.list.at(channels.current),
 						cache_msg);

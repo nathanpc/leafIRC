@@ -108,7 +108,7 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
         str_buffer = string(BOLDRED) + "<< " + message.get_nickname() + " got kicked from " + arguments.at(0) + " (" + arguments.at(2) + ")" + string(RESET) + "\r\n";
     } else if (message.get_command() == "MODE") {
         // Changing modes.
-        str_buffer = string(BOLDBLUE) + "* " + string(RESET) + message.get_nickname() + " set mode ";
+        str_buffer = string(BOLDBLUE) + "\u2022 " + string(RESET) + message.get_nickname() + " set mode ";
 
         for (unsigned int i = 0; i < arguments.size(); i++) {
             str_buffer += arguments.at(i) + " ";
@@ -123,7 +123,10 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
         str_buffer = string(BOLDRED) + "Error: " + arguments.at(0) + string(RESET) + "\r\n";
     } else if (message.get_command() == "NICK") {
         // Someone is chaning the nick.
-        str_buffer = string(BOLDBLUE) + "* " + color_string(message.get_nickname(), true) + " is now known as " + color_string(arguments.at(0), true) + "\r\n";
+        str_buffer = string(BOLDBLUE) + "\u2022 " + color_string(message.get_nickname(), true) + " is now known as " + color_string(arguments.at(0), true) + "\r\n";
+    } else if (message.get_command() == "TOPIC") {
+        // Someone is chaning the channel topic.
+		str_buffer = string(BOLDBLUE) + "\u2022 " + color_string(message.get_nickname(), true) + string(BOLDBLUE) + " changed the topic to " + string(RESET) + "\"" + arguments.at(1) + "\"\r\n";
     } else {
         // Might be a server message, so let's check for the reply code.
         int reply_code = message.get_reply_code();

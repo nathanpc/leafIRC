@@ -12,6 +12,9 @@
 #include "config.h"
 
 class Channels {
+	private:
+		std::string strip_channel_hash(const std::string channel);
+
     public:
         std::vector<std::string> list;
         int current;
@@ -20,7 +23,7 @@ class Channels {
         // Constructor.
         Channels();
 
-        void add(std::string channel);
+        void add(std::string channel, bool is_channel = true);
         void cache(std::string channel, std::string line);
         std::string load_cache(std::string channel);
         unsigned int find_index(std::string channel);

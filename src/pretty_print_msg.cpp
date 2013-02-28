@@ -76,7 +76,7 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
     if (message.get_command() == "PRIVMSG") {
         if (arguments.at(0).at(0) == '#') {
             // Channel message.
-            if (arguments.at(0) != "#" + channels.list.at(channels.current)) {
+            if (arguments.at(0) != channels.list.at(channels.current)) {
                 echo = false;
             }
 

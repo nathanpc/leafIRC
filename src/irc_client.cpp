@@ -176,9 +176,9 @@ int IRC_Client::run() {
 					channels.find_index(external_command.at(1));
 
 					clear();
-					cout << "\r" << BOLDBLUE << "Switching to #"
-					<< external_command.at(1) << RESET << "\r\n"
-					<< channels.load_cache(external_command.at(1));
+					cout << "\r" << BOLDBLUE << "Switching to "
+						<< external_command.at(1) << RESET << "\r\n"
+						<< channels.load_cache(external_command.at(1));
 
 					current_str = "";
 				} else if (command == "message") {
@@ -186,9 +186,9 @@ int IRC_Client::run() {
 					// to be sent to the current channel.
 					if (channels.current != -1) {
 						// Include the command to the message.
-						string send_msg = "PRIVMSG #" +
-						channels.list.at(channels.current) + " :" +
-						current_str;
+						string send_msg = "PRIVMSG " +
+							channels.list.at(channels.current) + " :" +
+							current_str;
 
 						string cache_msg = string(BOLDWHITE) + "<" + nick + "> " +
 						string(RESET) + current_str;
@@ -205,10 +205,21 @@ int IRC_Client::run() {
 				} else if (command == "me") {
 					// ACTIONs!
 					string curr_channel = channels.list.at(channels.current);
-					string send_msg = "PRIVMSG #" + curr_channel +
+					string send_msg = "PRIVMSG " + curr_channel +
 					" :\001ACTION " + external_command.at(1) + "\r\n";
 
 					send_data(send_msg.c_str());
+				} else if (command == "chats") {
+					// List the active chats.
+					clear();
+					cout << "\rActive chats: " << BOLDWHITE;
+
+					for (size_t i = 0; i < channels.list.size(); i++) {
+						cout << channels.list.at(i) << " ";
+					}
+
+					cout << RESET << endl;
+					current_str = "";
 				}
 			} else {
 				// Just send raw stuff.
@@ -246,7 +257,7 @@ void IRC_Client::clear() {
 void IRC_Client::rewrite() {
 	if (channels.list.size() != 0) {
 		// Print the marker with the current channel.
-		input_marker = string(BOLDCYAN) + '#' + channels.list.at(channels.current)
+		input_marker = string(BOLDCYAN) + channels.list.at(channels.current)
 			+ ' ' + string(":: ") + RESET;
 	}
 
@@ -362,10 +373,6 @@ bool IRC_Client::eval() {
 			// Switch the current channel.
 			string switch_channel = current_str.substr(current_str.find(" ") + 1);
 			
-			if (switch_channel.at(0) == '#') {
-				switch_channel = switch_channel.substr(1);
-			}
-			
 			external_command.push_back("switch");
 			external_command.push_back(switch_channel);
 		} else if (command == "msg") {
@@ -386,6 +393,8 @@ bool IRC_Client::eval() {
 			// Get the message.
 			string action_msg = current_str.substr(current_str.find(" ") + 1);
 			external_command.push_back(action_msg);
+		} else if (command == "chats") {
+			external_command.push_back("chats");
 		} else {
 			// Common IRC command.
 			current_str = current_str.substr(1);

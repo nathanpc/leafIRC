@@ -25,10 +25,16 @@ Channels::Channels() {
  * Add a channel to the list.
  *
  * \param channel Channel to be added.
+ * \param is_channel Is it a channel or a private chat?
  */
-void Channels::add(string channel) {
-    list.push_back(channel);
-    current = list.size() - 1;
+void Channels::add(string channel, bool is_channel) {
+	if (is_channel) {
+		list.push_back("#" + channel);
+	} else {
+		list.push_back(channel);
+	}
+
+	current = list.size() - 1;
 }
 
 /**
@@ -39,7 +45,7 @@ void Channels::add(string channel) {
  */
 void Channels::cache(string channel, string line) {
     unsigned int index = find_index(channel);
-    string filename = config.cache_filename(channel, index);
+    string filename = config.cache_filename(strip_channel_hash(channel), index);
     ofstream file;
 
 
@@ -60,7 +66,7 @@ void Channels::cache(string channel, string line) {
  */
 string Channels::load_cache(string channel) {
     unsigned int index = find_index(channel);
-    string filename = config.cache_filename(channel, index);
+    string filename = config.cache_filename(strip_channel_hash(channel), index);
     ifstream file;
     string content;
 
@@ -82,9 +88,9 @@ string Channels::load_cache(string channel) {
  * \return Index if the channel was found, otherwise NULL.
  */
 unsigned int Channels::find_index(string channel) {
-    if (list.at(current) != channel) {
+    if (strip_channel_hash(list.at(current)) != channel) {
         for (size_t i = 0; i < list.size(); i++) {
-            if (list.at(i) == channel) {
+            if (list.at(i) == strip_channel_hash(channel)) {
                 return i;
                 break;
             }
@@ -101,7 +107,7 @@ unsigned int Channels::find_index(string channel) {
  */
 void Channels::remove(string channel) {
     for (size_t i = 0; i < list.size(); i++) {
-        if (list.at(i) == channel) {
+        if (list.at(i) == strip_channel_hash(channel)) {
             remove(i);
             break;
         }
@@ -113,4 +119,13 @@ void Channels::remove(string channel) {
  */
 void Channels::remove(unsigned int index) {
     list.erase(list.begin() + index);
+}
+
+string Channels::strip_channel_hash(const string channel) {
+	string chat = channel;
+	if (chat.find("#") == 0) {
+		chat = chat.substr(1);
+	}
+
+	return chat;
 }

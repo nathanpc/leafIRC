@@ -30,6 +30,7 @@
 #include "channels.h"
 #include "pretty_print_msg.h"
 #include "color.h"
+#include "notification.h"
 
 #define MAXDATASIZE 256
 using namespace std;
@@ -495,7 +496,7 @@ bool IRC_Client::message_handler(const char *buffer) {
 	} else {
 		// Messages that need to be echoed.
 		Pretty_Print_Message pretty_print(buffer, nick);
-		string str = pretty_print.generate(message, channels);
+		string str = pretty_print.generate(*this, message, channels);
 
 		if (message.get_command() == "001") {
 			// Just connected to the server.

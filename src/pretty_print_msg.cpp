@@ -4,16 +4,19 @@
  *  @author Nathan Campos
  */
 
+#include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
 #include <string>
 
+#include "irc_client.h"
 #include "channels.h"
 #include "color.h"
 #include "irc_reply_codes.h"
 #include "message.h"
 #include "pretty_print_msg.h"
+#include "notification.h"
 using namespace std;
 
 /**
@@ -84,7 +87,7 @@ bool Pretty_Print_Message::check_mention(string message) {
  * \param channels Pointer to a Channels class.
  * \return Prettyfied string.
  */
-string Pretty_Print_Message::generate(Message &message, Channels &channels) {
+string Pretty_Print_Message::generate(IRC_Client &client, Message &message, Channels &channels) {
     // Parse and return a better and more human-readable message.
     string str_buffer(buffer);
     vector<string> arguments = message.get_command_args();
@@ -98,14 +101,30 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
                 echo = false;
             }
 
-            // A normal message.
             string nickname = message.get_nickname();
-            str_buffer = color_string(nickname, false) + "<" + nickname + "> " + string(RESET);
-            if (mentioned) {
-            	str_buffer += BOLDYELLOW;
-            }
 
-            str_buffer += arguments.at(1) + "\r\n";
+            // A normal message.
+    	    str_buffer = color_string(nickname, false) + "<" + nickname + "> " + string(RESET);
+
+    	    if (mentioned) {
+    	    	str_buffer += BOLDYELLOW;
+    	    }
+
+    	    str_buffer += arguments.at(1) + "\r\n";
+
+			// Mentioned in another channel.
+            if (mentioned) {
+				// Notify.
+            	string notf_title = nickname + " mentioned you at " + arguments.at(0);
+            	string notf_message = arguments.at(1);
+				Notification::notify(notf_title, notf_message);
+
+				if (arguments.at(0) != channels.list.at(channels.current)) {
+					client.clear();
+					cout << color_string(nickname, true) << BOLDYELLOW << " mentioned you at " << arguments.at(0) << RESET << endl;
+					client.rewrite();
+				}
+            }
 
             if (arguments.at(1).size() > 6) {
                 if (arguments.at(1).substr(0, 7) == "\001ACTION") {
@@ -117,7 +136,15 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
         	if (mentioned) {
         		// Was mentioned in another channel.
         		string nickname = message.get_nickname();
-            	str_buffer = "You just got mentioned by " + color_string(nickname, true) + string(RESET) + " at " + arguments.at(0).at(0) + "\r\n";
+
+				client.clear();
+        		cout << color_string(nickname, true) + " mentioned you at " + arguments.at(0) << endl;
+        		client.rewrite();
+
+				// Notify.
+            	string notf_title = nickname + " mentioned you at " + arguments.at(0).at(0);
+            	string notf_message = arguments.at(1);
+				Notification::notify(notf_title, notf_message);
         	}
         }
     } else if (message.get_command() == "JOIN") {

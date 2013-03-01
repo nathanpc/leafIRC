@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include "irc_client.h"
 #include "message.h"
 #include "channels.h"
 
@@ -24,7 +25,7 @@ class Pretty_Print_Message {
     public:
         Pretty_Print_Message(const char *_buffer, std::string _mention);
 
-        std::string generate(Message &message, Channels &channels);
+        std::string generate(IRC_Client &client, Message &message, Channels &channels);
         bool echo_message();
 };
 

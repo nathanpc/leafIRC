@@ -16,11 +16,13 @@ class Pretty_Print_Message {
     private:
         const char *buffer;
         bool echo;
+		std::string mention;
 
         std::string color_string(std::string nickname, bool include_msg);
+        bool check_mention(std::string message);
 
     public:
-        Pretty_Print_Message(const char *_buffer);
+        Pretty_Print_Message(const char *_buffer, std::string _mention);
 
         std::string generate(Message &message, Channels &channels);
         bool echo_message();

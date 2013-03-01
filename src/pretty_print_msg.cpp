@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
+#include <string>
 
 #include "channels.h"
 #include "color.h"
@@ -20,8 +21,9 @@ using namespace std;
  *
  * \param _buffer Message string.
  */
-Pretty_Print_Message::Pretty_Print_Message(const char *_buffer) {
+Pretty_Print_Message::Pretty_Print_Message(const char *_buffer, string _mention) {
     buffer = _buffer;
+    mention = _mention;
     echo = true;
 }
 
@@ -62,6 +64,20 @@ string Pretty_Print_Message::color_string(string nickname, bool include_msg) {
 }
 
 /**
+ * Check if there's a mention in a message.
+ *
+ * \param message A message.
+ * \return True if there's a mention.
+ */
+bool Pretty_Print_Message::check_mention(string message) {
+	if (message.find(mention) != string::npos) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Generate the pretty formatted string based on the message.
  *
  * \param message Pointer to a Message class.
@@ -74,6 +90,8 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
     vector<string> arguments = message.get_command_args();
 
     if (message.get_command() == "PRIVMSG") {
+    	bool mentioned = check_mention(arguments.at(1));
+
         if (arguments.at(0).at(0) == '#') {
             // Channel message.
             if (arguments.at(0) != channels.list.at(channels.current)) {
@@ -82,7 +100,12 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
 
             // A normal message.
             string nickname = message.get_nickname();
-            str_buffer = color_string(nickname, false) + "<" + nickname + "> " + string(RESET) + arguments.at(1) + "\r\n";
+            str_buffer = color_string(nickname, false) + "<" + nickname + "> " + string(RESET);
+            if (mentioned) {
+            	str_buffer += BOLDYELLOW;
+            }
+
+            str_buffer += arguments.at(1) + "\r\n";
 
             if (arguments.at(1).size() > 6) {
                 if (arguments.at(1).substr(0, 7) == "\001ACTION") {
@@ -90,6 +113,12 @@ string Pretty_Print_Message::generate(Message &message, Channels &channels) {
                     str_buffer = string(BOLDMAGENTA) + "\u2022 " + message.get_nickname() + " " + arguments.at(1).substr(8) + string(RESET) + "\r\n";
                 }
             }
+        } else {
+        	if (mentioned) {
+        		// Was mentioned in another channel.
+        		string nickname = message.get_nickname();
+            	str_buffer = "You just got mentioned by " + color_string(nickname, true) + string(RESET) + " at " + arguments.at(0).at(0) + "\r\n";
+        	}
         }
     } else if (message.get_command() == "JOIN") {
         // Someone joined the channel.

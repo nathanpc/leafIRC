@@ -494,7 +494,7 @@ bool IRC_Client::message_handler(const char *buffer) {
 		return false;
 	} else {
 		// Messages that need to be echoed.
-		Pretty_Print_Message pretty_print(buffer);
+		Pretty_Print_Message pretty_print(buffer, nick);
 		string str = pretty_print.generate(message, channels);
 
 		if (message.get_command() == "001") {

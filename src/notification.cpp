@@ -25,6 +25,8 @@ int Notification::notify(string title, string message) {
 		growl_init();
 		int rc = growl("127.0.0.1", "leafirc", "leafirc", title.c_str(), message.c_str(), NULL, NULL, NULL);
 		growl_shutdown();
+
+		return rc;
 	#else
 		// libnotify for UNIX.
 		NotifyNotification *notification;
@@ -42,6 +44,4 @@ int Notification::notify(string title, string message) {
 
 		return (int)success;
 	#endif
-
-	return rc;
 }

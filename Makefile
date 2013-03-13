@@ -9,14 +9,17 @@ ifeq ($(UNAME), Darwin)
 	LDFLAGS += -lgrowl
 endif
 ifeq ($(UNAME), Linux)
-	CXXFLAGS += $(shell pkg-config --cflags glib-2.0 libnotify)
-	LDFLAGS += $(shell pkg-config --libs glib-2.0 libnotify)
+    PACKAGES = libnotify
+
+	CXXFLAGS += $(shell pkg-config --cflags $(PACKAGES))
+	LDFLAGS += $(shell pkg-config --libs-only-L --libs-only-other $(PACKAGES))
+	LIBS = $(shell pkg-config --libs-only-l $(PACKAGES))
 endif
 
 all: leaf
 
 leaf: $(OBJ)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 debug: CXXFLAGS += -g3 -DDEBUG
 debug: leaf

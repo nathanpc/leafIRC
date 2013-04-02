@@ -18,6 +18,8 @@ Everyone loves screenshots, so this is how it looks (keep in mind that it's stil
 
 ## Any dependencies?
 
+**Notifications (Optional)**
+
 If you're under Mac OS X, leafIRC will use [Growl](http://growl.info/) to notify you about mentions and other stuff, so you'll need to have Growl installed and [gntp-send](https://github.com/mattn/gntp-send) which is the library we use to interface with Growl using C++.
 
 If you're under Linux you'll need [libnotify](http://developer-next.gnome.org/libnotify/0.7/) for the notification system.

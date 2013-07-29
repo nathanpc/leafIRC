@@ -30,6 +30,8 @@ debug: leaf
 clean:
 	rm -rf src/*.o src/core
 	rm -rf src/conio/*.o
+	rm -rf src/inih/*.o
+	rm -rf src/inih/cpp/*.o
 	rm -rf leaf
 
 install: leaf

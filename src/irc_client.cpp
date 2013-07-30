@@ -131,6 +131,10 @@ void IRC_Client::start_connection() {
 	pthread_create(&thread, NULL, &handle_recv_thread_helper, this);
 
 	// Send the first authentication messages to the server.
+	#ifdef DEBUG
+	cout << endl << "NICK USER: " << nick << " " << username << endl;
+	#endif
+
 	send_data("NICK " + nick + "\r\n");
 	send_data("USER " + username + " 0 * :" + realname + "\r\n");
 }
@@ -421,6 +425,10 @@ bool IRC_Client::eval() {
  * \return Number of bytes sent.
  */
 int IRC_Client::send_data(string data) {
+	#ifdef DEBUG
+	cout << "\nSend Data: \"" << data << "\"";
+	#endif
+
 	const char *buffer = data.c_str();
 	int len = strlen(buffer);
 	int bytes_sent = send(sd, buffer, len, 0);

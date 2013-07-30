@@ -20,10 +20,17 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    Config config;
+    if (argc == 1) {
+    	Config_Set config_set;
+    	config_set.user();
+    	config_set.save("user");
+    	return 0;
+    }
+
+    Config config(true);
     config.load_user_config(argv[1]);
 
-    IRC_Client client(config.server_location);
+	IRC_Client client(config.server_location);
     client.setup_user(config.user_nick, config.user_username,
     	config.user_realname, config.user_password, config.channels);
 

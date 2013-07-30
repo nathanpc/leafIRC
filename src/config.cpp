@@ -11,21 +11,34 @@
 #include <sstream>
 #include <cstdlib>
 #include <algorithm>
+#include <string>
 #include "inih/cpp/INIReader.h"
 
 #include "config.h"
 #include "locations.h"
+#include "color.h"
 using namespace std;
 
 /**
  * Constructor for the Config.
  */
 Config::Config() {
+	Config(false);
+}
+
+/**
+ * Constructor for the Config.
+ *
+ * \param load_config Want to load the configuration files or just get some variables?
+ */
+Config::Config(bool load_config) {
     config_dir = expand_path(HOME_DIR);
     history_dir = config_dir + string(HISTORY_DIR);
 
-    read_general_config_file();
-    clear_cache();
+	if (load_config) {
+	    read_general_config_file();
+		clear_cache();
+    }
 }
 
 /**
@@ -140,11 +153,27 @@ void Config::read_general_config_file() {
 }
 
 /**
- * Read the user config file. (user.conf)
+ * Save the configuration to the file.
  *
+ * \param file_name Name of the configuration with out the extension.
+ * \param contents The contents that will be saved to the file.
+ */
+void Config::save_config(string file_name, string contents) {
+	string location = config_dir + "/" + file_name + ".conf";
+
+	ofstream config_file;
+	config_file.open(location.c_str(), ios::out | ios::trunc);
+	config_file << contents;
+	config_file.close();
+}
+
+/**
+ * Load the user configuration based on the user's alias.
+ *
+ * \see read_user_config_file
  * \param server_alias Server alias.
  */
-void Config::read_user_config_file(const char *server_alias) {
+void Config::load_user_config(const char *server_alias) {
     string config_file = config_dir + "/user.conf";
     INIReader reader = INIReader(config_file);
     string alias = string(server_alias);
@@ -173,18 +202,9 @@ void Config::read_user_config_file(const char *server_alias) {
             server_location = string(alias);
         }
     } else {
+		// TODO: Error?
         server_location = string(alias);
     }
-}
-
-/**
- * Load the user configuration based on the user's alias.
- *
- * \see read_user_config_file
- * \param server_alias Server alias.
- */
-void Config::load_user_config(const char *server_alias) {
-    read_user_config_file(server_alias);
 }
 
 /**
@@ -217,4 +237,48 @@ void Config::populate_channels_vector(string channels_str) {
     if (!channels_str.empty()) {
         channels.push_back(channels_str);
     }
+}
+
+
+// Config_Set stuff.
+
+/**
+ * Config_Set constructor
+ */
+Config_Set::Config_Set() {
+}
+
+/**
+ * Create the interactive dialog to get the user's information.
+ */
+void Config_Set::user() {
+	cout << BOLDWHITE << "Setting up the user credentials" << RESET << endl;
+
+	cout << "Nickname: ";
+	getline(cin, nick);
+	cout << "Username: ";
+	getline(cin, username);
+	cout << "Real Name: ";
+	getline(cin, realname);
+}
+
+/**
+ * Save the configuration to the file.
+ */
+void Config_Set::save(string name) {
+	Config config(false);
+	string ini;
+	if (name.empty()) {
+		// Save everything!
+	} else if (name == "user") {
+		ini = "[user]\nnick=\"" + nick + "\"\nusername=\"" + username + "\"\nrealname=\"" + realname + "\"\n";
+		config.save_config("leaf", ini);
+	} else if (name == "networks") {
+		// TODO: Everything?
+	} else {
+		cerr << "Couldn't understand the name given to Config_Set::save" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	cout << BOLDGREEN << "Saved!" << RESET << endl;
 }

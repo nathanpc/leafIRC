@@ -149,19 +149,24 @@ string Pretty_Print_Message::generate(IRC_Client &client, Message &message, Chan
         }
     } else if (message.get_command() == "JOIN") {
         // Someone joined the channel.
-        // TODO: Check if this isn't adding more than one time when another user joins the channel.
-        // If it is move this to the repl loop and create an eval return for it.
+        // TODO: Check if this isn't adding more than one time when another user joins the channel. If it is move this to the repl loop and create an eval return for it.
         if (!arguments.empty()) {
             channels.add(arguments.at(0).substr(1, arguments.at(0).find(":") - 1));
         }
 
         str_buffer = string(BOLDGREEN) + "> " + string(RESET) + message.get_nickname() + " joined " + arguments.at(0) + "\r\n";
+		
+		// TODO: Update the users array for the channel.
     } else if (message.get_command() == "PART") {
         // Someone left the channel.
         str_buffer = string(BOLDRED) + "< " + string(RESET) + message.get_nickname() + " left\r\n";
+		
+		// TODO: Update the users array for the channel.
     } else if (message.get_command() == "KICK") {
         // Someone got kicked.
         str_buffer = string(BOLDRED) + "<< " + message.get_nickname() + " got kicked from " + arguments.at(0) + " (" + arguments.at(2) + ")" + string(RESET) + "\r\n";
+		
+		// TODO: Update the users array for the channel.
     } else if (message.get_command() == "MODE") {
         // Changing modes.
         str_buffer = string(BOLDBLUE) + "\u2022 " + string(RESET) + message.get_nickname() + " set mode ";
@@ -174,12 +179,16 @@ string Pretty_Print_Message::generate(IRC_Client &client, Message &message, Chan
     } else if (message.get_command() == "QUIT") {
         // Quitting.
         str_buffer = string(BOLDRED) + "<< " + string(RESET) + message.get_nickname() + " quit (" + arguments.at(0) + ")\r\n";
+		
+		// TODO: Update the users array for the channel.
     } else if (message.get_command() == "ERROR") {
         // Oh noes! Error!
         str_buffer = string(BOLDRED) + "Error: " + arguments.at(0) + string(RESET) + "\r\n";
     } else if (message.get_command() == "NICK") {
         // Someone is chaning the nick.
         str_buffer = string(BOLDBLUE) + "\u2022 " + color_string(message.get_nickname(), true) + " is now known as " + color_string(arguments.at(0), true) + "\r\n";
+
+		// TODO: Update the users array for the channel.
     } else if (message.get_command() == "TOPIC") {
         // Someone is chaning the channel topic.
 		str_buffer = string(BOLDBLUE) + "\u2022 " + color_string(message.get_nickname(), true) + string(BOLDBLUE) + " changed the topic to " + string(RESET) + "\"" + arguments.at(1) + "\"\r\n";
@@ -187,6 +196,7 @@ string Pretty_Print_Message::generate(IRC_Client &client, Message &message, Chan
         // Might be a server message, so let's check for the reply code.
         int reply_code = message.get_reply_code();
         ostringstream stream;
+		bool populate_users = false;
 
         switch (reply_code) {
             case RPL_TOPIC:
@@ -199,13 +209,26 @@ string Pretty_Print_Message::generate(IRC_Client &client, Message &message, Chan
                 break;
             case RPL_NAMREPLY:
                 // Got a list of the people online.
+
+				// Check if the user just joined.
+				if (channels.find_index(arguments.at(0)) == channels.current) {
+					populate_users = true;
+				}
+
+				// Print the user list.
                 stream << "Users: ";
-                
                 str_buffer = arguments.at(3);
                 while (str_buffer.find(" ") != string::npos) {
                     size_t pos = str_buffer.find(" ");
-                
-                    stream << color_string(str_buffer.substr(0, pos), true) << " ";
+					string user = str_buffer.substr(0, pos);
+
+					// Add to the nick list.
+					if (populate_users) {
+						channels.add_user(channels.find_index(arguments.at(0)), user);
+					}
+
+					// Print a user name.
+                    stream << color_string(user, true) << " ";
                     str_buffer.erase(0, pos + 1);
                 }
                 

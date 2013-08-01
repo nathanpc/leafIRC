@@ -34,6 +34,11 @@ void Channels::add(string channel, bool is_channel) {
 		list.push_back(channel);
 	}
 
+	// Create a new vector for the users array.
+	vector<string> _users;
+	users.push_back(_users);
+
+	// Set the new current channel index.
 	current = list.size() - 1;
 }
 
@@ -103,6 +108,54 @@ unsigned int Channels::find_index(string channel) {
 }
 
 /**
+ *  Populate the nicks for a channel.
+ *
+ *  @param index Channel index.
+ *  @param user Username.
+ */
+void Channels::add_user(unsigned int index, string user) {
+	// TODO: Check if the user is already in the array before pushing a new one.
+	if (find_user(index, user).empty()) {
+		users.at(index).push_back(user);
+	}
+}
+
+/**
+ *  Searches for a user name.
+ *
+ *  @param channel Channel index.
+ *  @param user A user name to search for.
+ *  @param searching Are you searching using part of a nick instead of matching?
+ *  @returns The user name if it exists, otherwise an empty string.
+ */
+string Channels::find_user(unsigned int channel, string user, bool searching) {
+	string _user;
+
+	for (size_t i = 0; i < users.at(channel).size(); i++) {
+		string tuser = users.at(channel).at(i);
+
+		if (searching && (tuser.find(user) != string::npos)) {
+			_user = tuser;
+		} else if (tuser == user) {
+			_user = tuser;
+		}
+	}
+
+	return _user;
+}
+
+/**
+ *  Searches for a user name.
+ *
+ *  @param channel Channel index.
+ *  @param user A user name to search for.
+ *  @returns The user name if it exists, otherwise an empty string.
+ */
+string Channels::find_user(unsigned int channel, string user) {
+	return find_user(channel, user, false);
+}
+
+/**
  * Remove a channel from the list based on its name.
  */
 void Channels::remove(string channel) {
@@ -119,8 +172,27 @@ void Channels::remove(string channel) {
  */
 void Channels::remove(unsigned int index) {
     list.erase(list.begin() + index);
+	users.erase(users.begin() + index);
 }
 
+/**
+ *  Remove the user's level symbol.
+ *
+ *  @param user Username to be stripped.
+ */
+string Channels::strip_user_level(const string user) {
+	if ((user[0] == '+') || (user[0] == '@') || (user[0] == '&')) {
+		return user.substr(1);
+	}
+
+	return user;
+}
+
+/**
+ *  Remove the channel hash symbol.
+ *
+ *  @param channel A channel name.
+ */
 string Channels::strip_channel_hash(const string channel) {
 	string chat = channel;
 	if (chat.find("#") == 0) {

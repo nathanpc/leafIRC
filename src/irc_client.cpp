@@ -292,13 +292,32 @@ bool IRC_Client::read() {
 		rewrite();
 	}
 	
-	//printf("%d\n", curr_char = Conio::getche());
+	//printf("\n\n%d\n\n", curr_char = Conio::getche());
 	curr_char = Conio::getch();
 	
 	// TODO: Implement nick auto-completion when the user hits tab.
 	if (curr_char == 3) {
 		// Control + C
 		return false;
+	}  else if (curr_char == 9) {
+		// Tab
+		string nick_part;
+		size_t spos = current_str.find_last_of(" ");
+
+		// Get the unfinished nickname after the last space.
+		if (spos != string::npos) {
+			nick_part = current_str.substr(spos + 1);
+		} else {
+			nick_part = current_str;
+		}
+
+		// Complete.
+		string completion = channels.strip_user_level(channels.find_user(channels.current, nick_part, true));
+		if (!completion.empty()) {
+			current_str = current_str.substr(0, spos + 1).append(completion);
+			clear();
+			rewrite();
+		}
 	} else if (curr_char == 127) {
 		// Backspace
 		if (current_str != "") {
@@ -336,6 +355,10 @@ bool IRC_Client::read() {
 					
 					rewrite();
 				}
+			} else if (curr_char == 67) {
+				// Right
+			} else if (curr_char == 68) {
+				// Left
 			}
 		}
 	} else if (curr_char != 10) {
